@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { NostrEvent } from '@nostrify/nostrify';
 import { useAuthor } from '@/hooks/useAuthor';
 import { usePostInteractions } from '@/hooks/useGlobalFeed';
@@ -15,12 +16,14 @@ import { formatDistanceToNow } from 'date-fns';
 interface PostCardProps {
   event: NostrEvent;
   showReplies?: boolean;
+  clickable?: boolean;
 }
 
-export function PostCard({ event, showReplies = false }: PostCardProps) {
+export function PostCard({ event, showReplies = false, clickable = true }: PostCardProps) {
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [replyContent, setReplyContent] = useState('');
-  
+  const navigate = useNavigate();
+
   const author = useAuthor(event.pubkey);
   const interactions = usePostInteractions(event.id);
   const { likePost, repostPost, replyToPost, isLoggedIn } = usePostActions();
@@ -48,19 +51,39 @@ export function PostCard({ event, showReplies = false }: PostCardProps) {
 
   const handleReply = () => {
     if (!replyContent.trim() || !isLoggedIn) return;
-    
+
     replyToPost.mutate({
       eventId: event.id,
       authorPubkey: event.pubkey,
       content: replyContent
     });
-    
+
     setReplyContent('');
     setShowReplyForm(false);
   };
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Don't navigate if clicking on interactive elements
+    if (
+      e.target instanceof HTMLElement &&
+      (e.target.closest('button') ||
+       e.target.closest('textarea') ||
+       e.target.closest('a') ||
+       e.target.closest('[role="button"]'))
+    ) {
+      return;
+    }
+
+    if (clickable) {
+      navigate(`/post/${event.id}`);
+    }
+  };
+
   return (
-    <Card className="gleam-card">
+    <Card
+      className={`gleam-card ${clickable ? 'gleam-card-clickable cursor-pointer transition-all duration-200 group relative' : ''}`}
+      onClick={handleCardClick}
+    >
       <CardHeader className="pb-3">
         <div className="flex items-start space-x-3">
           <Avatar className="gleam-avatar w-12 h-12">
@@ -69,7 +92,7 @@ export function PostCard({ event, showReplies = false }: PostCardProps) {
               {displayName.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          
+
           <div className="flex-1 min-w-0">
             <div className="flex items-center space-x-2">
               <h3 className="font-semibold text-foreground truncate">
@@ -99,7 +122,10 @@ export function PostCard({ event, showReplies = false }: PostCardProps) {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setShowReplyForm(!showReplyForm)}
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent card click
+              setShowReplyForm(!showReplyForm);
+            }}
             className="text-muted-foreground hover:text-primary flex items-center space-x-2"
           >
             <MessageCircle className="w-4 h-4" />

@@ -110,6 +110,11 @@
     @apply shadow-md;
   }
 
+  .gleam-card-clickable:hover {
+    @apply shadow-lg;
+    background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--accent)/0.3) 100%);
+  }
+
   .gleam-button {
     @apply rounded-lg px-4 py-2 font-medium transition-all duration-200;
   }
