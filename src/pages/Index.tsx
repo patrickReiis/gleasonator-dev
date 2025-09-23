@@ -3,6 +3,7 @@ import { Header } from '@/components/Header';
 import { ComposePost } from '@/components/ComposePost';
 import { Feed } from '@/components/Feed';
 import { Sidebar } from '@/components/Sidebar';
+import { FloatingPostButton } from '@/components/FloatingPostButton';
 
 const Index = () => {
   useSeoMeta({
@@ -40,6 +41,9 @@ const Index = () => {
           </aside>
         </div>
       </main>
+
+      {/* Floating action button for quick posting */}
+      <FloatingPostButton />
     </div>
   );
 };
