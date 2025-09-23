@@ -1,23 +1,45 @@
 import { useSeoMeta } from '@unhead/react';
-
-// FIXME: Update this page (the content is just a fallback if you fail to update the page)
+import { Header } from '@/components/Header';
+import { ComposePost } from '@/components/ComposePost';
+import { Feed } from '@/components/Feed';
+import { Sidebar } from '@/components/Sidebar';
 
 const Index = () => {
   useSeoMeta({
-    title: 'Welcome to Your Blank App',
-    description: 'A modern Nostr client application built with React, TailwindCSS, and Nostrify.',
+    title: 'Gleampost - Connect on Nostr',
+    description: 'A modern Nostr client with a nostalgic 2010s aesthetic. Connect, share, and discover on the decentralized social web.',
   });
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4 text-gray-900 dark:text-gray-100">
-          Welcome to Your Blank App
-        </h1>
-        <p className="text-xl text-gray-600 dark:text-gray-400">
-          Start building your amazing project here!
-        </p>
-      </div>
+    <div className="min-h-screen bg-background">
+      <Header />
+
+      <main className="container mx-auto px-4 py-6 max-w-6xl">
+        <div className="grid grid-cols-1 lg:grid-cols-4 xl:grid-cols-4 gap-6">
+          {/* Sidebar - Hidden on mobile, visible on desktop */}
+          <aside className="hidden lg:block lg:col-span-1">
+            <div className="sticky top-24">
+              <Sidebar />
+            </div>
+          </aside>
+
+          {/* Main content */}
+          <div className="lg:col-span-3 xl:col-span-2 space-y-6">
+            <ComposePost />
+            <Feed />
+          </div>
+
+          {/* Right sidebar - Could be used for trending, suggestions, etc. */}
+          <aside className="hidden xl:block xl:col-span-1">
+            <div className="sticky top-24">
+              {/* Placeholder for future features */}
+              <div className="text-center text-muted-foreground text-sm p-4">
+                More features coming soon...
+              </div>
+            </div>
+          </aside>
+        </div>
+      </main>
     </div>
   );
 };
