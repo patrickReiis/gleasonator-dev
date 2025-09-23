@@ -39,7 +39,7 @@ export function ComposePost() {
         <CardContent className="p-6 text-center">
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-foreground">
-              Welcome to Gleampost
+              Welcome to Gleasonator
             </h3>
             <p className="text-muted-foreground">
               Connect with the world on Nostr

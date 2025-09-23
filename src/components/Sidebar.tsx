@@ -10,7 +10,7 @@ import { Home, User, Settings, Globe, Zap } from 'lucide-react';
 export function Sidebar() {
   const { user } = useCurrentUser();
   const author = useAuthor(user?.pubkey || '');
-  
+
   const metadata = author.data?.metadata;
   const displayName = metadata?.display_name || metadata?.name || (user ? genUserName(user.pubkey) : '');
   const profileImage = metadata?.picture;
@@ -29,7 +29,7 @@ export function Sidebar() {
                   {displayName.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              
+
               <div className="flex-1 min-w-0">
                 <h3 className="font-semibold text-foreground truncate">
                   {displayName}
@@ -39,7 +39,7 @@ export function Sidebar() {
                 </p>
               </div>
             </div>
-            
+
             {about && (
               <p className="text-sm text-muted-foreground mt-3 line-clamp-3">
                 {about}
@@ -59,21 +59,21 @@ export function Sidebar() {
             <Home className="w-4 h-4 mr-3" />
             Home
           </Button>
-          
+
           {user && (
             <>
               <Button variant="ghost" className="w-full justify-start" size="sm">
                 <User className="w-4 h-4 mr-3" />
                 Profile
               </Button>
-              
+
               <Button variant="ghost" className="w-full justify-start" size="sm">
                 <Settings className="w-4 h-4 mr-3" />
                 Settings
               </Button>
             </>
           )}
-          
+
           <Button variant="ghost" className="w-full justify-start" size="sm">
             <Globe className="w-4 h-4 mr-3" />
             Explore
@@ -81,16 +81,16 @@ export function Sidebar() {
         </CardContent>
       </Card>
 
-      {/* About Gleampost */}
+      {/* About Gleasonator */}
       <Card className="gleam-card">
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium">About Gleampost</CardTitle>
+          <CardTitle className="text-sm font-medium">About Gleasonator</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
             A modern Nostr client with a nostalgic 2010s aesthetic. Connect, share, and discover on the decentralized social web.
           </p>
-          
+
           <div className="flex flex-wrap gap-2">
             <Badge variant="secondary" className="text-xs">
               <Zap className="w-3 h-3 mr-1" />
@@ -103,13 +103,13 @@ export function Sidebar() {
               Open Source
             </Badge>
           </div>
-          
+
           <div className="pt-2 text-xs text-muted-foreground">
             <p>
               Vibed with{' '}
-              <a 
-                href="https://soapbox.pub/mkstack" 
-                target="_blank" 
+              <a
+                href="https://soapbox.pub/mkstack"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary hover:underline"
               >

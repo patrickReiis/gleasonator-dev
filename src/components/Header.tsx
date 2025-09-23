@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { Moon, Sun, Settings, Zap } from 'lucide-react';
+import { Moon, Sun, Settings } from 'lucide-react';
 
 export function Header() {
   const { user } = useCurrentUser();
@@ -26,12 +26,14 @@ export function Header() {
             <MobileNav />
 
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-xl gleam-gradient flex items-center justify-center">
-                <Zap className="w-6 h-6 text-white" />
-              </div>
+              <img
+                src="/gleasonator_logo.png"
+                alt="Gleasonator"
+                className="w-10 h-10 rounded-xl object-contain"
+              />
               <div className="hidden sm:block">
                 <h1 className="text-xl font-bold text-foreground">
-                  Gleampost
+                  Gleasonator
                 </h1>
                 <p className="text-xs text-muted-foreground">
                   gleasonator.dev

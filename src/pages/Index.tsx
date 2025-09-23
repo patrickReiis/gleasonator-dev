@@ -6,7 +6,7 @@ import { Sidebar } from '@/components/Sidebar';
 
 const Index = () => {
   useSeoMeta({
-    title: 'Gleampost - Connect on Nostr',
+    title: 'Gleasonator - Connect on Nostr',
     description: 'A modern Nostr client with a nostalgic 2010s aesthetic. Connect, share, and discover on the decentralized social web.',
   });
 
