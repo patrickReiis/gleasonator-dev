@@ -1,5 +1,5 @@
 import { nip19 } from 'nostr-tools';
-import { useParams } from 'react-router-dom';
+import { useParams, Navigate } from 'react-router-dom';
 import NotFound from './NotFound';
 
 export function NIP19Page() {
@@ -21,11 +21,14 @@ export function NIP19Page() {
   switch (type) {
     case 'npub':
     case 'nprofile':
-      // AI agent should implement profile view here
-      return <div>Profile placeholder</div>;
+      // Redirect to profile page
+      return <Navigate to={`/profile/${identifier}`} replace />;
 
     case 'note':
-      // AI agent should implement note view here
+      // Redirect to post page
+      if (type === 'note') {
+        return <Navigate to={`/post/${identifier}`} replace />;
+      }
       return <div>Note placeholder</div>;
 
     case 'nevent':
@@ -39,4 +42,4 @@ export function NIP19Page() {
     default:
       return <NotFound />;
   }
-} 
+}

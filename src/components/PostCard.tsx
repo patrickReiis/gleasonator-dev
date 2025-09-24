@@ -86,21 +86,41 @@ export function PostCard({ event, showReplies = false, clickable = true }: PostC
     >
       <CardHeader className="pb-3">
         <div className="flex items-start space-x-3">
-          <Avatar className="gleam-avatar w-12 h-12">
-            <AvatarImage src={profileImage} alt={displayName} />
-            <AvatarFallback className="bg-primary/10 text-primary font-medium">
-              {displayName.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/profile/${event.pubkey}`);
+            }}
+            className="hover:scale-105 transition-transform"
+          >
+            <Avatar className="gleam-avatar w-12 h-12">
+              <AvatarImage src={profileImage} alt={displayName} />
+              <AvatarFallback className="bg-primary/10 text-primary font-medium">
+                {displayName.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+          </button>
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center space-x-2">
-              <h3 className="font-semibold text-foreground truncate">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/profile/${event.pubkey}`);
+                }}
+                className="font-semibold text-foreground truncate hover:text-primary transition-colors"
+              >
                 {displayName}
-              </h3>
-              <span className="text-muted-foreground text-sm">
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/profile/${event.pubkey}`);
+                }}
+                className="text-muted-foreground text-sm hover:text-primary transition-colors"
+              >
                 @{username}
-              </span>
+              </button>
               <span className="text-muted-foreground text-sm">
                 ·
               </span>

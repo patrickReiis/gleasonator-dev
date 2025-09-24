@@ -6,10 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Home, User, Settings, Globe, Zap } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export function Sidebar() {
   const { user } = useCurrentUser();
   const author = useAuthor(user?.pubkey || '');
+  const navigate = useNavigate();
 
   const metadata = author.data?.metadata;
   const displayName = metadata?.display_name || metadata?.name || (user ? genUserName(user.pubkey) : '');
@@ -20,7 +22,10 @@ export function Sidebar() {
     <div className="space-y-6">
       {/* User profile card */}
       {user && (
-        <Card className="gleam-card">
+        <Card
+          className="gleam-card gleam-card-clickable cursor-pointer transition-all duration-200"
+          onClick={() => navigate('/profile')}
+        >
           <CardHeader className="pb-4">
             <div className="flex items-center space-x-3">
               <Avatar className="gleam-avatar w-12 h-12">
@@ -55,14 +60,24 @@ export function Sidebar() {
           <CardTitle className="text-sm font-medium">Navigate</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
-          <Button variant="ghost" className="w-full justify-start" size="sm">
+          <Button
+            variant="ghost"
+            className="w-full justify-start"
+            size="sm"
+            onClick={() => navigate('/')}
+          >
             <Home className="w-4 h-4 mr-3" />
             Home
           </Button>
 
           {user && (
             <>
-              <Button variant="ghost" className="w-full justify-start" size="sm">
+              <Button
+                variant="ghost"
+                className="w-full justify-start"
+                size="sm"
+                onClick={() => navigate('/profile')}
+              >
                 <User className="w-4 h-4 mr-3" />
                 Profile
               </Button>

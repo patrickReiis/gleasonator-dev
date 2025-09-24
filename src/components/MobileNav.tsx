@@ -25,7 +25,7 @@ export function MobileNav() {
               <h3 className="text-sm font-medium mb-3">Relay</h3>
               <RelaySelector className="w-full" />
             </div>
-            
+
             {/* Sidebar content */}
             <Sidebar />
           </div>
