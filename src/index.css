@@ -161,4 +161,21 @@
   .gleam-fab-appear {
     animation: gleam-pulse 2s ease-in-out;
   }
+
+  /* Image gallery styling */
+  .gleam-image-gallery {
+    @apply rounded-lg overflow-hidden;
+  }
+
+  .gleam-image-gallery img {
+    @apply transition-all duration-200;
+  }
+
+  .gleam-image-gallery button:hover img {
+    @apply scale-105;
+  }
+
+  .gleam-image-gallery button:focus {
+    @apply outline-none ring-2 ring-primary ring-offset-2;
+  }
 }

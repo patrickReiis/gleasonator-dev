@@ -1,10 +1,11 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { type NostrEvent } from '@nostrify/nostrify';
 import { Link } from 'react-router-dom';
 import { nip19 } from 'nostr-tools';
 import { useAuthor } from '@/hooks/useAuthor';
 import { genUserName } from '@/lib/genUserName';
 import { cn } from '@/lib/utils';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 interface NoteContentProps {
   event: NostrEvent;
@@ -13,49 +14,78 @@ interface NoteContentProps {
 
 /** Parses content of text note events so that URLs and hashtags are linkified. */
 export function NoteContent({
-  event, 
-  className, 
-}: NoteContentProps) {  
-  // Process the content to render mentions, links, etc.
-  const content = useMemo(() => {
+  event,
+  className,
+}: NoteContentProps) {
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  // Extract images and text content separately
+  const { textContent, images } = useMemo(() => {
     const text = event.content;
-    
+
+    // Regex to match image URLs (common image formats)
+    const imageRegex = /(https?:\/\/[^\s]+\.(?:jpg|jpeg|png|gif|webp|svg)(?:\?[^\s]*)?)/gi;
+
+    // Extract all image URLs
+    const imageMatches = Array.from(text.matchAll(imageRegex));
+    const extractedImages = imageMatches.map(match => match[1]);
+
+    // Remove image URLs from text content
+    let cleanText = text;
+    extractedImages.forEach(imageUrl => {
+      cleanText = cleanText.replace(imageUrl, '').replace(/\n\n+/g, '\n\n').trim();
+    });
+
+    return {
+      textContent: cleanText,
+      images: extractedImages
+    };
+  }, [event.content]);
+
+  // Process the text content to render mentions, links, etc.
+  const content = useMemo(() => {
+    const text = textContent;
+
     // Regex to find URLs, Nostr references, and hashtags
     const regex = /(https?:\/\/[^\s]+)|nostr:(npub1|note1|nprofile1|nevent1)([023456789acdefghjklmnpqrstuvwxyz]+)|(#\w+)/g;
-    
+
     const parts: React.ReactNode[] = [];
     let lastIndex = 0;
     let match: RegExpExecArray | null;
     let keyCounter = 0;
-    
+
     while ((match = regex.exec(text)) !== null) {
       const [fullMatch, url, nostrPrefix, nostrData, hashtag] = match;
       const index = match.index;
-      
+
       // Add text before this match
       if (index > lastIndex) {
         parts.push(text.substring(lastIndex, index));
       }
-      
+
       if (url) {
-        // Handle URLs
-        parts.push(
-          <a 
-            key={`url-${keyCounter++}`}
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-500 hover:underline"
-          >
-            {url}
-          </a>
-        );
+        // Skip image URLs as they're handled separately
+        const isImageUrl = /\.(jpg|jpeg|png|gif|webp|svg)(\?[^\s]*)?$/i.test(url);
+        if (!isImageUrl) {
+          // Handle non-image URLs
+          parts.push(
+            <a
+              key={`url-${keyCounter++}`}
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 hover:underline"
+            >
+              {url}
+            </a>
+          );
+        }
       } else if (nostrPrefix && nostrData) {
         // Handle Nostr references
         try {
           const nostrId = `${nostrPrefix}${nostrData}`;
           const decoded = nip19.decode(nostrId);
-          
+
           if (decoded.type === 'npub') {
             const pubkey = decoded.data;
             parts.push(
@@ -64,7 +94,7 @@ export function NoteContent({
           } else {
             // For other types, just show as a link
             parts.push(
-              <Link 
+              <Link
                 key={`nostr-${keyCounter++}`}
                 to={`/${nostrId}`}
                 className="text-blue-500 hover:underline"
@@ -81,7 +111,7 @@ export function NoteContent({
         // Handle hashtags
         const tag = hashtag.slice(1); // Remove the #
         parts.push(
-          <Link 
+          <Link
             key={`hashtag-${keyCounter++}`}
             to={`/t/${tag}`}
             className="text-blue-500 hover:underline"
@@ -90,26 +120,90 @@ export function NoteContent({
           </Link>
         );
       }
-      
+
       lastIndex = index + fullMatch.length;
     }
-    
+
     // Add any remaining text
     if (lastIndex < text.length) {
       parts.push(text.substring(lastIndex));
     }
-    
+
     // If no special content was found, just use the plain text
     if (parts.length === 0) {
       parts.push(text);
     }
-    
+
     return parts;
-  }, [event]);
+  }, [textContent]);
 
   return (
-    <div className={cn("whitespace-pre-wrap break-words", className)}>
-      {content.length > 0 ? content : event.content}
+    <div className={cn("space-y-3", className)}>
+      {/* Text content */}
+      {textContent && (
+        <div className="whitespace-pre-wrap break-words">
+          {content.length > 0 ? content : textContent}
+        </div>
+      )}
+
+      {/* Image gallery */}
+      {images.length > 0 && (
+        <div className={cn(
+          "gleam-image-gallery grid gap-2",
+          images.length === 1 ? "grid-cols-1" :
+          images.length === 2 ? "grid-cols-2" :
+          images.length === 3 ? "grid-cols-2" :
+          "grid-cols-2"
+        )}>
+          {images.map((imageUrl, index) => (
+            <button
+              key={index}
+              onClick={() => setSelectedImage(imageUrl)}
+              className={cn(
+                "relative overflow-hidden rounded-lg border border-border hover:opacity-90 transition-opacity",
+                images.length === 3 && index === 0 ? "row-span-2" : "",
+                images.length > 2 ? "aspect-square" : "aspect-video"
+              )}
+            >
+              <img
+                src={imageUrl}
+                alt={`Image ${index + 1}`}
+                className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+                loading="lazy"
+              />
+              {/* Image overlay for multiple images */}
+              {images.length > 4 && index === 3 && (
+                <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                  <span className="text-white font-semibold text-lg">
+                    +{images.length - 3}
+                  </span>
+                </div>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Image modal */}
+      <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
+        <DialogContent className="max-w-4xl w-full max-h-[90vh] p-0 bg-transparent border-0">
+          {selectedImage && (
+            <div className="relative">
+              <img
+                src={selectedImage}
+                alt="Full size image"
+                className="w-full h-auto max-h-[90vh] object-contain rounded-lg"
+              />
+              {/* Navigation for multiple images */}
+              {images.length > 1 && (
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/80 text-white px-3 py-1 rounded-full text-sm">
+                  {images.indexOf(selectedImage) + 1} / {images.length}
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -122,12 +216,12 @@ function NostrMention({ pubkey }: { pubkey: string }) {
   const displayName = author.data?.metadata?.name ?? genUserName(pubkey);
 
   return (
-    <Link 
+    <Link
       to={`/${npub}`}
       className={cn(
         "font-medium hover:underline",
-        hasRealName 
-          ? "text-blue-500" 
+        hasRealName
+          ? "text-blue-500"
           : "text-gray-500 hover:text-gray-700"
       )}
     >
