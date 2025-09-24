@@ -12,10 +12,12 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { Moon, Sun, Settings } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export function Header() {
   const { user } = useCurrentUser();
   const { theme, setTheme } = useTheme();
+  const navigate = useNavigate();
 
   return (
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
@@ -25,7 +27,10 @@ export function Header() {
           <div className="flex items-center space-x-3">
             <MobileNav />
 
-            <div className="flex items-center space-x-3">
+            <button
+              onClick={() => navigate('/')}
+              className="flex items-center space-x-3 hover:opacity-80 transition-opacity"
+            >
               <img
                 src="/gleasonator_logo.png"
                 alt="Gleasonator"
@@ -39,7 +44,7 @@ export function Header() {
                   gleasonator.dev
                 </p>
               </div>
-            </div>
+            </button>
           </div>
 
           {/* Right side controls */}
