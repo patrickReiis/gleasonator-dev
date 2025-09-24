@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSeoMeta } from '@unhead/react';
 import { useShortVideos } from '@/hooks/useShortVideos';
 import { VideoPlayer } from '@/components/VideoPlayer';
+import { Header } from '@/components/Header';
+import { Sidebar } from '@/components/Sidebar';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -12,11 +14,11 @@ import { useNavigate } from 'react-router-dom';
 export function ShortVideosPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const navigate = useNavigate();
-  
-  const { 
-    data, 
-    fetchNextPage, 
-    hasNextPage, 
+
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
     isFetchingNextPage,
     isLoading,
     isError,
@@ -51,19 +53,19 @@ export function ShortVideosPage() {
   // Handle scroll navigation
   useEffect(() => {
     let isScrolling = false;
-    
+
     const handleWheel = (e: WheelEvent) => {
       if (isScrolling) return;
-      
+
       e.preventDefault();
       isScrolling = true;
-      
+
       if (e.deltaY > 0) {
         goToNext();
       } else {
         goToPrevious();
       }
-      
+
       setTimeout(() => {
         isScrolling = false;
       }, 500);
@@ -99,139 +101,128 @@ export function ShortVideosPage() {
     setTimeout(goToNext, 300); // Small delay before advancing
   }, [goToNext]);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="w-16 h-16 mx-auto">
-            <Skeleton className="w-full h-full rounded-full" />
-          </div>
-          <div className="text-white">Loading videos...</div>
-        </div>
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center p-4">
-        <Card className="gleam-card border-destructive/50 max-w-md">
-          <CardContent className="p-6 text-center">
-            <div className="space-y-4">
-              <Wifi className="w-12 h-12 text-destructive mx-auto" />
-              <div>
-                <h3 className="text-lg font-semibold text-foreground">
-                  Connection Error
-                </h3>
-                <p className="text-muted-foreground mt-1">
-                  {error?.message || 'Unable to load videos'}
-                </p>
-              </div>
-              <div className="space-y-3">
-                <RelaySelector className="w-full" />
-                <Button 
-                  onClick={() => navigate('/')} 
-                  variant="outline"
-                  className="w-full"
-                >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back to Home
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (videos.length === 0) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center p-4">
-        <Card className="gleam-card border-dashed max-w-md">
-          <CardContent className="py-12 px-8 text-center">
-            <div className="max-w-sm mx-auto space-y-6">
-              <Play className="w-12 h-12 text-muted-foreground mx-auto" />
-              <div>
-                <h3 className="text-lg font-semibold text-foreground">
-                  No videos found
-                </h3>
-                <p className="text-muted-foreground mt-1">
-                  Try switching to a different relay to discover videos
-                </p>
-              </div>
-              <div className="space-y-3">
-                <RelaySelector className="w-full" />
-                <Button 
-                  onClick={() => navigate('/')} 
-                  variant="outline"
-                  className="w-full"
-                >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back to Home
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   return (
-    <div className="fixed inset-0 bg-black overflow-hidden">
-      {/* Back button */}
-      <Button
-        onClick={() => navigate('/')}
-        variant="ghost"
-        size="sm"
-        className="absolute top-4 left-4 z-50 bg-black/50 text-white hover:bg-black/70"
-      >
-        <ArrowLeft className="w-4 h-4 mr-2" />
-        Back
-      </Button>
+    <div className="min-h-screen bg-background">
+      <Header />
 
-      {/* Video counter */}
-      <div className="absolute top-4 right-4 z-50 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
-        {currentIndex + 1} / {videos.length}
-      </div>
+      <main className="container mx-auto px-4 py-6 max-w-6xl">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Sidebar */}
+          <aside className="hidden lg:block lg:col-span-1">
+            <div className="sticky top-24">
+              <Sidebar />
+            </div>
+          </aside>
 
-      {/* Video players */}
-      <div className="relative w-full h-full">
-        {videos.map((video, index) => (
-          <div
-            key={video.id}
-            className={`absolute inset-0 transition-transform duration-500 ${
-              index === currentIndex ? 'translate-y-0' :
-              index < currentIndex ? '-translate-y-full' :
-              'translate-y-full'
-            }`}
-          >
-            <VideoPlayer
-              event={video}
-              isActive={index === currentIndex}
-              onVideoEnd={handleVideoEnd}
-            />
+          {/* Videos content */}
+          <div className="lg:col-span-3">
+            {/* Back button */}
+            <Button
+              onClick={() => navigate('/')}
+              variant="ghost"
+              className="mb-4"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Home
+            </Button>
+
+            {isLoading ? (
+              <div className="space-y-6">
+                <div className="text-center space-y-4">
+                  <Skeleton className="w-16 h-16 mx-auto rounded-full" />
+                  <div className="text-foreground">Loading videos...</div>
+                </div>
+              </div>
+            ) : isError ? (
+              <Card className="gleam-card border-destructive/50">
+                <CardContent className="p-6 text-center">
+                  <div className="space-y-4">
+                    <Wifi className="w-12 h-12 text-destructive mx-auto" />
+                    <div>
+                      <h3 className="text-lg font-semibold text-foreground">
+                        Connection Error
+                      </h3>
+                      <p className="text-muted-foreground mt-1">
+                        {error?.message || 'Unable to load videos'}
+                      </p>
+                    </div>
+                    <RelaySelector className="w-full max-w-sm mx-auto" />
+                  </div>
+                </CardContent>
+              </Card>
+            ) : videos.length === 0 ? (
+              <Card className="gleam-card border-dashed">
+                <CardContent className="py-12 px-8 text-center">
+                  <div className="max-w-sm mx-auto space-y-6">
+                    <Play className="w-12 h-12 text-muted-foreground mx-auto" />
+                    <div>
+                      <h3 className="text-lg font-semibold text-foreground">
+                        No videos found
+                      </h3>
+                      <p className="text-muted-foreground mt-1">
+                        Try switching to a different relay to discover videos
+                      </p>
+                    </div>
+                    <RelaySelector className="w-full" />
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-6">
+                {/* Video counter */}
+                <div className="text-center">
+                  <div className="inline-flex items-center bg-primary/10 text-primary px-3 py-1 rounded-full text-sm">
+                    <Play className="w-4 h-4 mr-2" />
+                    Video {currentIndex + 1} of {videos.length}
+                  </div>
+                </div>
+
+                {/* Current video */}
+                <div className="relative">
+                  <VideoPlayer
+                    event={videos[currentIndex]}
+                    isActive={true}
+                    onVideoEnd={handleVideoEnd}
+                  />
+                </div>
+
+                {/* Navigation buttons */}
+                <div className="flex justify-center space-x-4">
+                  <Button
+                    onClick={goToPrevious}
+                    disabled={currentIndex === 0}
+                    variant="outline"
+                  >
+                    Previous
+                  </Button>
+                  <Button
+                    onClick={goToNext}
+                    disabled={currentIndex >= videos.length - 1 && !hasNextPage}
+                    className="gleam-button gleam-button-primary"
+                  >
+                    {currentIndex >= videos.length - 1 && hasNextPage ? 'Load More' : 'Next'}
+                  </Button>
+                </div>
+
+                {/* Loading indicator */}
+                {isFetchingNextPage && (
+                  <div className="text-center">
+                    <div className="inline-flex items-center text-muted-foreground text-sm">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2"></div>
+                      Loading more videos...
+                    </div>
+                  </div>
+                )}
+
+                {/* Navigation hints */}
+                <div className="text-center text-sm text-muted-foreground">
+                  <p>Use arrow keys to navigate • ESC to go back</p>
+                </div>
+              </div>
+            )}
           </div>
-        ))}
-      </div>
-
-      {/* Navigation hints */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-50">
-        <div className="bg-black/50 text-white px-4 py-2 rounded-full text-sm text-center">
-          <p>Scroll or use arrow keys to navigate</p>
-          <p className="text-xs opacity-75 mt-1">ESC to exit</p>
         </div>
-      </div>
-
-      {/* Loading indicator for next videos */}
-      {isFetchingNextPage && (
-        <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-50">
-          <div className="bg-black/50 text-white px-3 py-1 rounded-full text-sm">
-            Loading more videos...
-          </div>
-        </div>
-      )}
+      </main>
     </div>
   );
 }

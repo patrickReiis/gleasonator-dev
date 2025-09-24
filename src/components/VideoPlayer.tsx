@@ -108,9 +108,9 @@ export function VideoPlayer({ event, isActive, onVideoEnd }: VideoPlayerProps) {
   };
 
   return (
-    <div 
+    <div
       ref={ref}
-      className="relative w-full h-screen bg-black flex items-center justify-center overflow-hidden"
+      className="relative w-full aspect-video bg-black rounded-lg overflow-hidden gleam-card"
       onMouseEnter={() => setShowControls(true)}
       onMouseLeave={() => setShowControls(false)}
       onClick={togglePlay}
@@ -161,91 +161,84 @@ export function VideoPlayer({ event, isActive, onVideoEnd }: VideoPlayerProps) {
         </div>
       </div>
 
-      {/* Video info sidebar */}
-      <div className="absolute right-4 bottom-20 flex flex-col items-center space-y-6 text-white">
-        {/* Author profile */}
-        <button
-          onClick={handleProfileClick}
-          className="flex flex-col items-center space-y-2 hover:opacity-80 transition-opacity"
-        >
-          <Avatar className="w-12 h-12 border-2 border-white">
-            <AvatarImage src={profileImage} alt={displayName} />
-            <AvatarFallback className="bg-primary text-primary-foreground">
-              {displayName.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <span className="text-xs font-medium">{displayName}</span>
-        </button>
+      {/* Video info overlay - bottom */}
+      <div className="absolute bottom-4 left-4 right-4 text-white">
+        <div className="flex items-end justify-between">
+          {/* Video info */}
+          <div className="flex-1 mr-4">
+            {/* Author profile */}
+            <button
+              onClick={handleProfileClick}
+              className="flex items-center space-x-2 mb-2 hover:opacity-80 transition-opacity"
+            >
+              <Avatar className="w-8 h-8 border-2 border-white">
+                <AvatarImage src={profileImage} alt={displayName} />
+                <AvatarFallback className="bg-primary text-primary-foreground text-sm">
+                  {displayName.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-sm font-medium">{displayName}</span>
+            </button>
 
-        {/* Action buttons */}
-        <div className="flex flex-col items-center space-y-4">
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={handleLike}
-            disabled={!isLoggedIn}
-            className="w-12 h-12 rounded-full bg-black/50 text-white hover:bg-red-500/70 transition-colors"
-          >
-            <Heart className="w-6 h-6" />
-            <span className="sr-only">Like</span>
-          </Button>
-          <span className="text-xs">{likes.length}</span>
-
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={() => navigate(`/post/${event.id}`)}
-            className="w-12 h-12 rounded-full bg-black/50 text-white hover:bg-blue-500/70 transition-colors"
-          >
-            <MessageCircle className="w-6 h-6" />
-            <span className="sr-only">Comment</span>
-          </Button>
-          <span className="text-xs">{replies.length}</span>
-
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={handleRepost}
-            disabled={!isLoggedIn}
-            className="w-12 h-12 rounded-full bg-black/50 text-white hover:bg-green-500/70 transition-colors"
-          >
-            <Repeat2 className="w-6 h-6" />
-            <span className="sr-only">Repost</span>
-          </Button>
-          <span className="text-xs">{reposts.length}</span>
-
-          <Button
-            size="icon"
-            variant="ghost"
-            className="w-12 h-12 rounded-full bg-black/50 text-white hover:bg-gray-500/70 transition-colors"
-          >
-            <Share className="w-6 h-6" />
-            <span className="sr-only">Share</span>
-          </Button>
-        </div>
-      </div>
-
-      {/* Video info bottom */}
-      <div className="absolute bottom-4 left-4 right-20 text-white">
-        {videoData.title && (
-          <h3 className="font-bold text-lg mb-2 line-clamp-2">
-            {videoData.title}
-          </h3>
-        )}
-        {videoData.description && (
-          <p className="text-sm opacity-90 mb-2 line-clamp-3">
-            {videoData.description}
-          </p>
-        )}
-        {videoData.hashtags.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {videoData.hashtags.map((tag, index) => (
-              <span key={index} className="text-sm text-blue-300">
-                #{tag}
-              </span>
-            ))}
+            {videoData.title && (
+              <h3 className="font-bold text-base mb-1 line-clamp-2">
+                {videoData.title}
+              </h3>
+            )}
+            {videoData.description && (
+              <p className="text-sm opacity-90 mb-2 line-clamp-2">
+                {videoData.description}
+              </p>
+            )}
+            {videoData.hashtags.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {videoData.hashtags.slice(0, 3).map((tag, index) => (
+                  <span key={index} className="text-sm text-blue-300">
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
-        )}
+
+          {/* Action buttons */}
+          <div className="flex items-center space-x-2">
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={handleLike}
+              disabled={!isLoggedIn}
+              className="w-10 h-10 rounded-full bg-black/50 text-white hover:bg-red-500/70 transition-colors"
+            >
+              <Heart className="w-5 h-5" />
+              <span className="sr-only">Like</span>
+            </Button>
+            <span className="text-xs">{likes.length}</span>
+
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={() => navigate(`/post/${event.id}`)}
+              className="w-10 h-10 rounded-full bg-black/50 text-white hover:bg-blue-500/70 transition-colors"
+            >
+              <MessageCircle className="w-5 h-5" />
+              <span className="sr-only">Comment</span>
+            </Button>
+            <span className="text-xs">{replies.length}</span>
+
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={handleRepost}
+              disabled={!isLoggedIn}
+              className="w-10 h-10 rounded-full bg-black/50 text-white hover:bg-green-500/70 transition-colors"
+            >
+              <Repeat2 className="w-5 h-5" />
+              <span className="sr-only">Repost</span>
+            </Button>
+            <span className="text-xs">{reposts.length}</span>
+          </div>
+        </div>
       </div>
     </div>
   );
