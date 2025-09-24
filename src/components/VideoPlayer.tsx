@@ -22,7 +22,10 @@ export function VideoPlayer({ event, isActive, onVideoEnd }: VideoPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [showControls, setShowControls] = useState(false);
-  const { ref, inView } = useInView({ threshold: 0.5 });
+  const { ref, inView } = useInView({
+    threshold: 0.6, // Video needs to be 60% visible to auto-play
+    triggerOnce: false
+  });
   const navigate = useNavigate();
 
   const videoData = extractVideoData(event);
@@ -39,12 +42,12 @@ export function VideoPlayer({ event, isActive, onVideoEnd }: VideoPlayerProps) {
   const reposts = interactionData?.reposts || [];
   const replies = interactionData?.replies || [];
 
-  // Auto-play when video becomes active and in view
+  // Auto-play when video becomes in view (50% threshold)
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
-    if (isActive && inView) {
+    if (inView) {
       video.play().then(() => {
         setIsPlaying(true);
       }).catch(console.error);
@@ -52,7 +55,7 @@ export function VideoPlayer({ event, isActive, onVideoEnd }: VideoPlayerProps) {
       video.pause();
       setIsPlaying(false);
     }
-  }, [isActive, inView]);
+  }, [inView]);
 
   // Handle video end
   useEffect(() => {
@@ -107,10 +110,21 @@ export function VideoPlayer({ event, isActive, onVideoEnd }: VideoPlayerProps) {
     navigate(`/profile/${event.pubkey}`);
   };
 
+  // Determine if this is a vertical video for different aspect ratio
+  const isVertical = videoData.videoVariants?.some(variant => {
+    if (variant.dimension) {
+      const [width, height] = variant.dimension.split('x').map(Number);
+      return height > width;
+    }
+    return false;
+  });
+
   return (
     <div
       ref={ref}
-      className="relative w-full aspect-video bg-black rounded-lg overflow-hidden gleam-card"
+      className={`relative w-full bg-black rounded-lg overflow-hidden gleam-card ${
+        isVertical ? 'aspect-[9/16] max-w-md mx-auto' : 'aspect-video'
+      }`}
       onMouseEnter={() => setShowControls(true)}
       onMouseLeave={() => setShowControls(false)}
       onClick={togglePlay}

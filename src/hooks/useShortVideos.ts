@@ -2,6 +2,24 @@ import { useNostr } from '@nostrify/react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import type { NostrEvent } from '@nostrify/nostrify';
 
+// Helper function to detect if a video is vertical/portrait
+function isVerticalVideo(videoData: any): boolean {
+  if (!videoData.videoVariants || videoData.videoVariants.length === 0) {
+    return false;
+  }
+
+  // Check the primary video variant for dimensions
+  const primaryVariant = videoData.videoVariants[0];
+  if (primaryVariant.dimension) {
+    const [width, height] = primaryVariant.dimension.split('x').map(Number);
+    if (width && height) {
+      return height > width; // Portrait/vertical if height > width
+    }
+  }
+
+  return false;
+}
+
 // Validator for NIP-71 video events
 function validateVideoEvent(event: NostrEvent): boolean {
   // Check if it's a video event kind (21 for normal videos, 22 for short videos)
@@ -42,8 +60,8 @@ export function useShortVideos() {
     queryKey: ['short-videos'],
     queryFn: async ({ pageParam, signal }) => {
       const filter: any = {
-        kinds: [22], // Kind 22 for short videos according to NIP-71
-        limit: 10 // Smaller batches for video content
+        kinds: [21, 22], // Both normal and short videos, we'll filter for vertical ones
+        limit: 50 // Larger batch to find more videos
       };
       if (pageParam) filter.until = pageParam;
 
@@ -62,7 +80,7 @@ export function useShortVideos() {
         console.log('Sample event:', events[0]);
       }
 
-      // Filter events through validator and sort by created_at descending
+      // Filter and prioritize vertical videos
       const validEvents = events
         .filter(event => {
           const isValid = validateVideoEvent(event);
@@ -71,9 +89,24 @@ export function useShortVideos() {
           }
           return isValid;
         })
-        .sort((a, b) => b.created_at - a.created_at);
+        .map(event => {
+          const videoData = extractVideoData(event);
+          return { ...event, videoData };
+        })
+        .sort((a, b) => {
+          // Prioritize vertical videos first
+          const aIsVertical = isVerticalVideo(a.videoData);
+          const bIsVertical = isVerticalVideo(b.videoData);
+
+          if (aIsVertical && !bIsVertical) return -1;
+          if (!aIsVertical && bIsVertical) return 1;
+
+          // Then sort by created_at descending
+          return b.created_at - a.created_at;
+        });
 
       console.log('Valid video events:', validEvents.length);
+      console.log('Vertical videos:', validEvents.filter(e => isVerticalVideo(e.videoData)).length);
       return validEvents;
     },
     getNextPageParam: (lastPage) => {
