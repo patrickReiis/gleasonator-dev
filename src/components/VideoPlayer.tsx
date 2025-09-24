@@ -1,0 +1,252 @@
+import { useRef, useEffect, useState } from 'react';
+import { useInView } from 'react-intersection-observer';
+import type { NostrEvent } from '@nostrify/nostrify';
+import { extractVideoData } from '@/hooks/useShortVideos';
+import { useAuthor } from '@/hooks/useAuthor';
+import { usePostInteractions } from '@/hooks/useGlobalFeed';
+import { usePostActions } from '@/hooks/usePostActions';
+import { genUserName } from '@/lib/genUserName';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Heart, MessageCircle, Repeat2, Share, Play, Pause, VolumeX, Volume2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
+interface VideoPlayerProps {
+  event: NostrEvent;
+  isActive: boolean;
+  onVideoEnd?: () => void;
+}
+
+export function VideoPlayer({ event, isActive, onVideoEnd }: VideoPlayerProps) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+  const [showControls, setShowControls] = useState(false);
+  const { ref, inView } = useInView({ threshold: 0.5 });
+  const navigate = useNavigate();
+
+  const videoData = extractVideoData(event);
+  const author = useAuthor(event.pubkey);
+  const interactions = usePostInteractions(event.id);
+  const { likePost, repostPost, isLoggedIn } = usePostActions();
+
+  const metadata = author.data?.metadata;
+  const displayName = metadata?.display_name || metadata?.name || genUserName(event.pubkey);
+  const profileImage = metadata?.picture;
+
+  const interactionData = interactions.data?.pages[0];
+  const likes = interactionData?.likes || [];
+  const reposts = interactionData?.reposts || [];
+  const replies = interactionData?.replies || [];
+
+  // Auto-play when video becomes active and in view
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (isActive && inView) {
+      video.play().then(() => {
+        setIsPlaying(true);
+      }).catch(console.error);
+    } else {
+      video.pause();
+      setIsPlaying(false);
+    }
+  }, [isActive, inView]);
+
+  // Handle video end
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handleVideoEnd = () => {
+      setIsPlaying(false);
+      onVideoEnd?.();
+    };
+
+    video.addEventListener('ended', handleVideoEnd);
+    return () => video.removeEventListener('ended', handleVideoEnd);
+  }, [onVideoEnd]);
+
+  const togglePlay = () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (isPlaying) {
+      video.pause();
+      setIsPlaying(false);
+    } else {
+      video.play().then(() => {
+        setIsPlaying(true);
+      }).catch(console.error);
+    }
+  };
+
+  const toggleMute = () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.muted = !video.muted;
+    setIsMuted(video.muted);
+  };
+
+  const handleLike = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isLoggedIn) return;
+    likePost.mutate(event.id);
+  };
+
+  const handleRepost = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isLoggedIn) return;
+    repostPost.mutate({ id: event.id, pubkey: event.pubkey });
+  };
+
+  const handleProfileClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/profile/${event.pubkey}`);
+  };
+
+  return (
+    <div 
+      ref={ref}
+      className="relative w-full h-screen bg-black flex items-center justify-center overflow-hidden"
+      onMouseEnter={() => setShowControls(true)}
+      onMouseLeave={() => setShowControls(false)}
+      onClick={togglePlay}
+    >
+      {/* Video element */}
+      <video
+        ref={videoRef}
+        src={videoData.url}
+        poster={videoData.thumbnail}
+        className="w-full h-full object-cover"
+        loop
+        muted={isMuted}
+        playsInline
+        preload="metadata"
+      />
+
+      {/* Video overlay controls */}
+      <div className={`absolute inset-0 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
+        {/* Play/Pause button */}
+        {!isPlaying && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Button
+              size="icon"
+              className="w-16 h-16 rounded-full bg-black/50 text-white hover:bg-black/70"
+              onClick={(e) => {
+                e.stopPropagation();
+                togglePlay();
+              }}
+            >
+              <Play className="w-8 h-8 ml-1" />
+            </Button>
+          </div>
+        )}
+
+        {/* Top controls */}
+        <div className="absolute top-4 right-4 flex flex-col gap-2">
+          <Button
+            size="icon"
+            variant="ghost"
+            className="w-10 h-10 rounded-full bg-black/50 text-white hover:bg-black/70"
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleMute();
+            }}
+          >
+            {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+          </Button>
+        </div>
+      </div>
+
+      {/* Video info sidebar */}
+      <div className="absolute right-4 bottom-20 flex flex-col items-center space-y-6 text-white">
+        {/* Author profile */}
+        <button
+          onClick={handleProfileClick}
+          className="flex flex-col items-center space-y-2 hover:opacity-80 transition-opacity"
+        >
+          <Avatar className="w-12 h-12 border-2 border-white">
+            <AvatarImage src={profileImage} alt={displayName} />
+            <AvatarFallback className="bg-primary text-primary-foreground">
+              {displayName.charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <span className="text-xs font-medium">{displayName}</span>
+        </button>
+
+        {/* Action buttons */}
+        <div className="flex flex-col items-center space-y-4">
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={handleLike}
+            disabled={!isLoggedIn}
+            className="w-12 h-12 rounded-full bg-black/50 text-white hover:bg-red-500/70 transition-colors"
+          >
+            <Heart className="w-6 h-6" />
+            <span className="sr-only">Like</span>
+          </Button>
+          <span className="text-xs">{likes.length}</span>
+
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={() => navigate(`/post/${event.id}`)}
+            className="w-12 h-12 rounded-full bg-black/50 text-white hover:bg-blue-500/70 transition-colors"
+          >
+            <MessageCircle className="w-6 h-6" />
+            <span className="sr-only">Comment</span>
+          </Button>
+          <span className="text-xs">{replies.length}</span>
+
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={handleRepost}
+            disabled={!isLoggedIn}
+            className="w-12 h-12 rounded-full bg-black/50 text-white hover:bg-green-500/70 transition-colors"
+          >
+            <Repeat2 className="w-6 h-6" />
+            <span className="sr-only">Repost</span>
+          </Button>
+          <span className="text-xs">{reposts.length}</span>
+
+          <Button
+            size="icon"
+            variant="ghost"
+            className="w-12 h-12 rounded-full bg-black/50 text-white hover:bg-gray-500/70 transition-colors"
+          >
+            <Share className="w-6 h-6" />
+            <span className="sr-only">Share</span>
+          </Button>
+        </div>
+      </div>
+
+      {/* Video info bottom */}
+      <div className="absolute bottom-4 left-4 right-20 text-white">
+        {videoData.title && (
+          <h3 className="font-bold text-lg mb-2 line-clamp-2">
+            {videoData.title}
+          </h3>
+        )}
+        {videoData.description && (
+          <p className="text-sm opacity-90 mb-2 line-clamp-3">
+            {videoData.description}
+          </p>
+        )}
+        {videoData.hashtags.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {videoData.hashtags.map((tag, index) => (
+              <span key={index} className="text-sm text-blue-300">
+                #{tag}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

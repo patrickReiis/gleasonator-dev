@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Home, User, Settings, Globe, Zap } from 'lucide-react';
+import { Home, User, Settings, Globe, Zap, Play } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export function Sidebar() {
@@ -92,6 +92,16 @@ export function Sidebar() {
           <Button variant="ghost" className="w-full justify-start" size="sm">
             <Globe className="w-4 h-4 mr-3" />
             Explore
+          </Button>
+
+          <Button
+            variant="ghost"
+            className="w-full justify-start"
+            size="sm"
+            onClick={() => navigate('/videos')}
+          >
+            <Play className="w-4 h-4 mr-3" />
+            Short Videos
           </Button>
         </CardContent>
       </Card>
