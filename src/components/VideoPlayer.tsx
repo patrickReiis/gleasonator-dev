@@ -123,8 +123,9 @@ export function VideoPlayer({ event, isActive, onVideoEnd }: VideoPlayerProps) {
     <div
       ref={ref}
       className={`relative w-full bg-black rounded-lg overflow-hidden gleam-card ${
-        isVertical ? 'aspect-[9/16] max-w-md mx-auto' : 'aspect-video'
+        isVertical ? 'aspect-[9/16] mx-auto' : 'aspect-video'
       }`}
+      style={isVertical ? { maxWidth: '360px' } : {}}
       onMouseEnter={() => setShowControls(true)}
       onMouseLeave={() => setShowControls(false)}
       onClick={togglePlay}
