@@ -14,7 +14,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FloatingPostButton } from '@/components/FloatingPostButton';
-import { ArrowLeft, MapPin, Link as LinkIcon, Calendar, Users, MessageSquare, Heart } from 'lucide-react';
+import { EditProfileForm } from '@/components/EditProfileForm';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { ArrowLeft, MapPin, Link as LinkIcon, Users, MessageSquare, Heart, Edit2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useInView } from 'react-intersection-observer';
 
@@ -22,7 +24,7 @@ export function ProfilePage() {
   const { identifier } = useParams<{ identifier: string }>();
   const navigate = useNavigate();
   const { user } = useCurrentUser();
-  
+
   // Convert npub to hex if needed
   let pubkey = identifier || '';
   try {
@@ -42,14 +44,14 @@ export function ProfilePage() {
   }
 
   const author = useAuthor(pubkey);
-  const { 
-    data: postsData, 
-    fetchNextPage, 
-    hasNextPage, 
+  const {
+    data: postsData,
+    fetchNextPage,
+    hasNextPage,
     isFetchingNextPage,
-    isLoading: postsLoading 
+    isLoading: postsLoading
   } = useUserPosts(pubkey);
-  
+
   const { data: statsData, isLoading: statsLoading } = useUserStats(pubkey);
   const { ref, inView } = useInView();
 
@@ -91,8 +93,8 @@ export function ProfilePage() {
               <p className="text-muted-foreground">
                 {user ? 'Invalid profile identifier.' : 'Please sign in to view your profile.'}
               </p>
-              <Button 
-                onClick={() => navigate('/')} 
+              <Button
+                onClick={() => navigate('/')}
                 className="mt-4"
                 variant="outline"
               >
@@ -109,13 +111,13 @@ export function ProfilePage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
+
       <main className="container mx-auto px-4 py-6 max-w-4xl">
         <div className="space-y-6">
           {/* Back button */}
-          <Button 
-            onClick={() => navigate('/')} 
-            variant="ghost" 
+          <Button
+            onClick={() => navigate('/')}
+            variant="ghost"
             className="mb-4"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -127,14 +129,14 @@ export function ProfilePage() {
             {/* Banner */}
             {bannerImage && (
               <div className="h-32 sm:h-48 bg-gradient-to-r from-primary/20 to-accent/20 relative">
-                <img 
-                  src={bannerImage} 
+                <img
+                  src={bannerImage}
                   alt="Profile banner"
                   className="w-full h-full object-cover"
                 />
               </div>
             )}
-            
+
             <CardContent className="p-6">
               <div className="flex flex-col sm:flex-row gap-4">
                 {/* Avatar */}
@@ -146,37 +148,71 @@ export function ProfilePage() {
                     </AvatarFallback>
                   </Avatar>
                 </div>
-                
+
                 {/* Profile info */}
                 <div className="flex-1 space-y-4">
-                  <div>
-                    <h1 className="text-2xl font-bold text-foreground">
-                      {author.isLoading ? (
-                        <Skeleton className="h-8 w-48" />
-                      ) : (
-                        displayName
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h1 className="text-2xl font-bold text-foreground">
+                        {author.isLoading ? (
+                          <Skeleton className="h-8 w-48" />
+                        ) : (
+                          displayName
+                        )}
+                      </h1>
+                      <p className="text-muted-foreground">
+                        {author.isLoading ? (
+                          <Skeleton className="h-4 w-32" />
+                        ) : (
+                          `@${username}`
+                        )}
+                      </p>
+                      {isOwnProfile && (
+                        <Badge variant="secondary" className="mt-1">
+                          Your Profile
+                        </Badge>
                       )}
-                    </h1>
-                    <p className="text-muted-foreground">
-                      {author.isLoading ? (
-                        <Skeleton className="h-4 w-32" />
-                      ) : (
-                        `@${username}`
-                      )}
-                    </p>
+                    </div>
+
+                    {/* Edit profile button for own profile */}
                     {isOwnProfile && (
-                      <Badge variant="secondary" className="mt-1">
-                        Your Profile
-                      </Badge>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gleam-button hover:bg-primary/10 hover:border-primary/50 transition-all duration-200"
+                          >
+                            <Edit2 className="w-4 h-4 mr-2" />
+                            Edit Profile
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-hidden gleam-card border-2">
+                          <DialogHeader className="border-b border-border/50 pb-4">
+                            <DialogTitle className="flex items-center gap-3 text-xl">
+                              <div className="w-8 h-8 rounded-lg gleam-gradient flex items-center justify-center">
+                                <Edit2 className="w-4 h-4 text-white" />
+                              </div>
+                              Edit Your Profile
+                            </DialogTitle>
+                            <p className="text-sm text-muted-foreground mt-2">
+                              Update your profile information and let others know more about you.
+                            </p>
+                          </DialogHeader>
+                          <div className="overflow-y-auto max-h-[calc(85vh-120px)] py-4 px-1">
+                            <EditProfileForm />
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                     )}
                   </div>
-                  
+
                   {bio && (
                     <p className="text-foreground leading-relaxed">
                       {bio}
                     </p>
                   )}
-                  
+
                   {/* Profile metadata */}
                   <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                     {location && (
@@ -188,7 +224,7 @@ export function ProfilePage() {
                     {website && (
                       <div className="flex items-center gap-1">
                         <LinkIcon className="w-4 h-4" />
-                        <a 
+                        <a
                           href={website.startsWith('http') ? website : `https://${website}`}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -198,10 +234,6 @@ export function ProfilePage() {
                         </a>
                       </div>
                     )}
-                    <div className="flex items-center gap-1">
-                      <Calendar className="w-4 h-4" />
-                      <span>Joined Nostr</span>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -225,7 +257,7 @@ export function ProfilePage() {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card className="gleam-card">
               <CardContent className="p-4 text-center">
                 <div className="text-2xl font-bold text-foreground">
@@ -241,7 +273,7 @@ export function ProfilePage() {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card className="gleam-card">
               <CardContent className="p-4 text-center">
                 <div className="text-2xl font-bold text-foreground">
@@ -302,7 +334,7 @@ export function ProfilePage() {
                   {posts.map((post) => (
                     <PostCard key={`${post.id}-${post.created_at}`} event={post} />
                   ))}
-                  
+
                   {hasNextPage && (
                     <div ref={ref} className="py-4">
                       {isFetchingNextPage && (
@@ -329,7 +361,7 @@ export function ProfilePage() {
           </Card>
         </div>
       </main>
-      
+
       <FloatingPostButton />
     </div>
   );
