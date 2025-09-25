@@ -23,8 +23,6 @@ export function NoteContent({
     if (e) {
       e.preventDefault();
       e.stopPropagation();
-      // Stop immediate propagation to prevent any other handlers
-      e.stopImmediatePropagation();
     }
     setSelectedImage(null);
   };
@@ -198,19 +196,19 @@ export function NoteContent({
       )}
 
       {/* Image modal */}
-      <Dialog open={!!selectedImage} onOpenChange={(open) => !open && closeModal()}>
+      <Dialog open={!!selectedImage} onOpenChange={(open) => !open && setSelectedImage(null)}>
         <DialogContent
           className="max-w-5xl w-full max-h-[95vh] p-2 bg-transparent border-0"
           onPointerDownOutside={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            closeModal(e);
+            setSelectedImage(null);
           }}
-          onEscapeKeyDown={closeModal}
+          onEscapeKeyDown={() => setSelectedImage(null)}
           onInteractOutside={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            closeModal(e);
+            setSelectedImage(null);
           }}
         >
           {selectedImage && (
@@ -220,7 +218,11 @@ export function NoteContent({
             >
               {/* Close button */}
               <button
-                onClick={closeModal}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setSelectedImage(null);
+                }}
                 className="absolute top-4 right-4 z-10 w-10 h-10 bg-white/90 hover:bg-white text-black rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-lg"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
