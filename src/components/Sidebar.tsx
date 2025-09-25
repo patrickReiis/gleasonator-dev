@@ -89,7 +89,12 @@ export function Sidebar() {
             </>
           )}
 
-          <Button variant="ghost" className="w-full justify-start" size="sm">
+          <Button
+            variant="ghost"
+            className="w-full justify-start"
+            size="sm"
+            onClick={() => navigate('/explore')}
+          >
             <Globe className="w-4 h-4 mr-3" />
             Explore
           </Button>
