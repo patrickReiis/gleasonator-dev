@@ -63,9 +63,9 @@ export function ReplyThread({ eventId, showRoot = true, className }: ReplyThread
     <div className={`space-y-4 ${className}`}>
       {/* Root event (if this is a reply and we want to show it) */}
       {showRoot && rootEvent && (
-        <div className="opacity-60">
-          <PostCard 
-            event={rootEvent} 
+        <div>
+          <PostCard
+            event={rootEvent}
             clickable={true}
             showReplies={false}
           />
@@ -83,11 +83,12 @@ export function ReplyThread({ eventId, showRoot = true, className }: ReplyThread
       <div className="relative">
         {/* Reply indicator */}
         <ReplyIndicator event={event} showRoot={false} className="mb-3" />
-        
-        <PostCard 
-          event={event} 
+
+        <PostCard
+          event={event}
           clickable={false}
           showReplies={false}
+          highlighted={true}
         />
       </div>
 
@@ -98,7 +99,7 @@ export function ReplyThread({ eventId, showRoot = true, className }: ReplyThread
             <MessageSquare className="w-4 h-4" />
             <span>Replies ({replies.length})</span>
           </div>
-          
+
           <div className="ml-12 space-y-4 border-l-2 border-border/30 pl-4">
             {replies.map((reply, index) => (
               <div key={reply.id} className="relative">
@@ -106,7 +107,7 @@ export function ReplyThread({ eventId, showRoot = true, className }: ReplyThread
                 {index < replies.length - 1 && (
                   <div className="absolute left-[-19px] top-8 w-0.5 h-full bg-border/30" />
                 )}
-                
+
                 <PostCard
                   event={reply}
                   clickable={true}
@@ -114,7 +115,7 @@ export function ReplyThread({ eventId, showRoot = true, className }: ReplyThread
                 />
               </div>
             ))}
-            
+
             {/* Load more indicator */}
             {hasNextPage && (
               <div ref={ref} className="py-4">

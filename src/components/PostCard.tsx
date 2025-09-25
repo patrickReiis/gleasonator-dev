@@ -18,9 +18,10 @@ interface PostCardProps {
   event: NostrEvent;
   showReplies?: boolean;
   clickable?: boolean;
+  highlighted?: boolean;
 }
 
-export function PostCard({ event, showReplies = false, clickable = true }: PostCardProps) {
+export function PostCard({ event, showReplies = false, clickable = true, highlighted = false }: PostCardProps) {
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [replyContent, setReplyContent] = useState('');
   const navigate = useNavigate();
@@ -82,7 +83,7 @@ export function PostCard({ event, showReplies = false, clickable = true }: PostC
 
   return (
     <Card
-      className={`gleam-card ${clickable ? 'gleam-card-clickable cursor-pointer transition-all duration-200 group relative' : ''}`}
+      className={`gleam-card ${clickable ? 'gleam-card-clickable cursor-pointer transition-all duration-200 group relative' : ''} ${highlighted ? 'border-2 border-green-500 shadow-[0_0_20px_rgba(34,197,94,0.3)]' : ''}`}
       onClick={handleCardClick}
     >
       <CardHeader className="pb-3">
