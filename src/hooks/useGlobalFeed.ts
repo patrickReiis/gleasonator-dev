@@ -1,6 +1,7 @@
 import { useNostr } from '@nostrify/react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import type { NostrEvent } from '@nostrify/nostrify';
+import { deduplicateEvents, sortEventsByDate } from '@/lib/eventUtils';
 
 export function useGlobalFeed() {
   const { nostr } = useNostr();
@@ -15,14 +16,21 @@ export function useGlobalFeed() {
         signal: AbortSignal.any([signal, AbortSignal.timeout(3000)])
       });
 
-      // Sort by created_at descending
-      return events.sort((a, b) => b.created_at - a.created_at);
+      // Sort by created_at descending (newest first)
+      return sortEventsByDate(events, true); // true = newest first
     },
     getNextPageParam: (lastPage) => {
       if (lastPage.length === 0) return undefined;
       return lastPage[lastPage.length - 1].created_at - 1;
     },
     initialPageParam: undefined,
+    select: (data) => {
+      // Deduplicate events when selecting data
+      return {
+        pages: data.pages.map(page => deduplicateEvents(page)),
+        pageParams: data.pageParams,
+      };
+    },
   });
 }
 
@@ -38,14 +46,17 @@ export function usePostInteractions(eventId: string) {
           '#e': [eventId],
           limit: 150,
         }
-      ], { 
+      ], {
         signal: AbortSignal.any([signal, AbortSignal.timeout(2000)])
       });
 
+      // Deduplicate events
+      const uniqueEvents = deduplicateEvents(events);
+
       // Separate by type
-      const replies = events.filter((e) => e.kind === 1);
-      const reposts = events.filter((e) => e.kind === 6);
-      const likes = events.filter((e) => e.kind === 7);
+      const replies = uniqueEvents.filter((e) => e.kind === 1);
+      const reposts = uniqueEvents.filter((e) => e.kind === 6);
+      const likes = uniqueEvents.filter((e) => e.kind === 7);
 
       return { replies, reposts, likes };
     },

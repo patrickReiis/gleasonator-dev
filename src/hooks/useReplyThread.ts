@@ -2,6 +2,7 @@ import { useNostr } from '@nostrify/react';
 import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
 import type { NostrEvent } from '@nostrify/nostrify';
 import { isReply, getRootEventId, getParentEventId } from '@/lib/replyUtils';
+import { deduplicateEvents, sortEventsByDate } from '@/lib/eventUtils';
 
 interface ReplyThreadOptions {
   limit?: number;
@@ -88,10 +89,14 @@ export function useReplyThread(eventId: string, options: ReplyThreadOptions = {}
     enabled: !!eventId,
   });
 
+  // Deduplicate replies by event ID
+  const allReplies = repliesQuery.data?.pages.flat() || [];
+  const uniqueReplies = deduplicateEvents(allReplies);
+
   return {
     rootEvent: rootQuery.data,
     event: eventQuery.data,
-    replies: repliesQuery.data?.pages.flat() || [],
+    replies: uniqueReplies,
     isLoading: rootQuery.isLoading || eventQuery.isLoading || repliesQuery.isLoading,
     isError: rootQuery.isError || eventQuery.isError || repliesQuery.isError,
     fetchNextPage: repliesQuery.fetchNextPage,
@@ -124,12 +129,19 @@ export function useDirectReplies(eventId: string, limit = 20) {
       });
 
       // Sort by created_at ascending (oldest first)
-      return events.sort((a, b) => a.created_at - b.created_at);
+      return sortEventsByDate(events, false); // false = oldest first
     },
     getNextPageParam: (lastPage) => {
       if (lastPage.length === 0) return undefined;
       return lastPage[lastPage.length - 1].created_at + 1;
     },
     initialPageParam: undefined,
+    select: (data) => {
+      // Deduplicate events when selecting data
+      return {
+        pages: data.pages.map(page => deduplicateEvents(page)),
+        pageParams: data.pageParams,
+      };
+    },
   });
 }
