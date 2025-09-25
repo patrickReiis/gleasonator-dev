@@ -6,6 +6,7 @@ import { useAuthor } from '@/hooks/useAuthor';
 import { genUserName } from '@/lib/genUserName';
 import { Header } from '@/components/Header';
 import { ReplyThread } from '@/components/ReplyThread';
+import { Sidebar } from '@/components/Sidebar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -46,25 +47,47 @@ export function PostPage() {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <main className="container mx-auto px-4 py-6 max-w-2xl">
-          <Card className="gleam-card border-destructive/50">
-            <CardContent className="p-6 text-center">
-              <h2 className="text-lg font-semibold text-foreground mb-2">
-                Invalid Post
-              </h2>
-              <p className="text-muted-foreground">
-                No post ID provided.
-              </p>
-              <Button
-                onClick={() => navigate('/')}
-                className="mt-4"
-                variant="outline"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Home
-              </Button>
-            </CardContent>
-          </Card>
+        <main className="container mx-auto px-4 py-6 max-w-6xl">
+          <div className="grid grid-cols-1 lg:grid-cols-4 xl:grid-cols-4 gap-6">
+            {/* Sidebar - Hidden on mobile, visible on desktop */}
+            <aside className="hidden lg:block lg:col-span-1">
+              <div className="sticky top-24">
+                <Sidebar />
+              </div>
+            </aside>
+
+            {/* Main content */}
+            <div className="lg:col-span-3 xl:col-span-2 space-y-6">
+              <Card className="gleam-card border-destructive/50">
+                <CardContent className="p-6 text-center">
+                  <h2 className="text-lg font-semibold text-foreground mb-2">
+                    Invalid Post
+                  </h2>
+                  <p className="text-muted-foreground">
+                    No post ID provided.
+                  </p>
+                  <Button
+                    onClick={() => navigate('/')}
+                    className="mt-4"
+                    variant="outline"
+                  >
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Back to Home
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Right sidebar - Could be used for trending, suggestions, etc. */}
+            <aside className="hidden xl:block xl:col-span-1">
+              <div className="sticky top-24">
+                {/* Placeholder for future features */}
+                <div className="text-center text-muted-foreground text-sm p-4">
+                  More features coming soon...
+                </div>
+              </div>
+            </aside>
+          </div>
         </main>
       </div>
     );
@@ -74,36 +97,56 @@ export function PostPage() {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <main className="container mx-auto px-4 py-6 max-w-2xl">
-          <div className="space-y-6">
-            <Button
-              onClick={() => navigate('/')}
-              variant="ghost"
-              className="mb-4"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
-            </Button>
+        <main className="container mx-auto px-4 py-6 max-w-6xl">
+          <div className="grid grid-cols-1 lg:grid-cols-4 xl:grid-cols-4 gap-6">
+            {/* Sidebar - Hidden on mobile, visible on desktop */}
+            <aside className="hidden lg:block lg:col-span-1">
+              <div className="sticky top-24">
+                <Sidebar />
+              </div>
+            </aside>
 
-            {/* Loading skeleton for main post */}
-            <Card className="gleam-card">
-              <CardContent className="p-6">
-                <div className="flex space-x-4">
-                  <Skeleton className="w-12 h-12 rounded-full" />
-                  <div className="flex-1 space-y-3">
-                    <div className="flex items-center space-x-2">
-                      <Skeleton className="h-4 w-24" />
-                      <Skeleton className="h-3 w-16" />
-                    </div>
-                    <div className="space-y-2">
-                      <Skeleton className="h-4 w-full" />
-                      <Skeleton className="h-4 w-4/5" />
-                      <Skeleton className="h-4 w-3/5" />
+            {/* Main content */}
+            <div className="lg:col-span-3 xl:col-span-2 space-y-6">
+              <Button
+                onClick={() => navigate('/')}
+                variant="ghost"
+                className="mb-4"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back
+              </Button>
+
+              {/* Loading skeleton for main post */}
+              <Card className="gleam-card">
+                <CardContent className="p-6">
+                  <div className="flex space-x-4">
+                    <Skeleton className="w-12 h-12 rounded-full" />
+                    <div className="flex-1 space-y-3">
+                      <div className="flex items-center space-x-2">
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-3 w-16" />
+                      </div>
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-4/5" />
+                        <Skeleton className="h-4 w-3/5" />
+                      </div>
                     </div>
                   </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Right sidebar - Could be used for trending, suggestions, etc. */}
+            <aside className="hidden xl:block xl:col-span-1">
+              <div className="sticky top-24">
+                {/* Placeholder for future features */}
+                <div className="text-center text-muted-foreground text-sm p-4">
+                  More features coming soon...
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </aside>
           </div>
         </main>
       </div>
@@ -114,34 +157,56 @@ export function PostPage() {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <main className="container mx-auto px-4 py-6 max-w-2xl">
-          <Button
-            onClick={() => navigate('/')}
-            variant="ghost"
-            className="mb-4"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
+        <main className="container mx-auto px-4 py-6 max-w-6xl">
+          <div className="grid grid-cols-1 lg:grid-cols-4 xl:grid-cols-4 gap-6">
+            {/* Sidebar - Hidden on mobile, visible on desktop */}
+            <aside className="hidden lg:block lg:col-span-1">
+              <div className="sticky top-24">
+                <Sidebar />
+              </div>
+            </aside>
 
-          <Card className="gleam-card border-destructive/50">
-            <CardContent className="p-6 text-center">
-              <h2 className="text-lg font-semibold text-foreground mb-2">
-                Post Not Found
-              </h2>
-              <p className="text-muted-foreground">
-                This post could not be found or may have been deleted.
-              </p>
+            {/* Main content */}
+            <div className="lg:col-span-3 xl:col-span-2 space-y-6">
               <Button
                 onClick={() => navigate('/')}
-                className="mt-4"
-                variant="outline"
+                variant="ghost"
+                className="mb-4"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Home
+                Back
               </Button>
-            </CardContent>
-          </Card>
+
+              <Card className="gleam-card border-destructive/50">
+                <CardContent className="p-6 text-center">
+                  <h2 className="text-lg font-semibold text-foreground mb-2">
+                    Post Not Found
+                  </h2>
+                  <p className="text-muted-foreground">
+                    This post could not be found or may have been deleted.
+                  </p>
+                  <Button
+                    onClick={() => navigate('/')}
+                    className="mt-4"
+                    variant="outline"
+                  >
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Back to Home
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Right sidebar - Could be used for trending, suggestions, etc. */}
+            <aside className="hidden xl:block xl:col-span-1">
+              <div className="sticky top-24">
+                {/* Placeholder for future features */}
+                <div className="text-center text-muted-foreground text-sm p-4">
+                  More features coming soon...
+                </div>
+              </div>
+            </aside>
+          </div>
         </main>
       </div>
     );
@@ -151,20 +216,40 @@ export function PostPage() {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="container mx-auto px-4 py-6 max-w-2xl">
-        <div className="space-y-6">
-          {/* Back button */}
-          <Button
-            onClick={() => navigate('/')}
-            variant="ghost"
-            className="mb-4"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
+      <main className="container mx-auto px-4 py-6 max-w-6xl">
+        <div className="grid grid-cols-1 lg:grid-cols-4 xl:grid-cols-4 gap-6">
+          {/* Sidebar - Hidden on mobile, visible on desktop */}
+          <aside className="hidden lg:block lg:col-span-1">
+            <div className="sticky top-24">
+              <Sidebar />
+            </div>
+          </aside>
 
-          {/* Reply thread */}
-          <ReplyThread eventId={eventId} showRoot={true} />
+          {/* Main content */}
+          <div className="lg:col-span-3 xl:col-span-2 space-y-6">
+            {/* Back button */}
+            <Button
+              onClick={() => navigate('/')}
+              variant="ghost"
+              className="mb-4"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
+            </Button>
+
+            {/* Reply thread */}
+            <ReplyThread eventId={eventId} showRoot={true} />
+          </div>
+
+          {/* Right sidebar - Could be used for trending, suggestions, etc. */}
+          <aside className="hidden xl:block xl:col-span-1">
+            <div className="sticky top-24">
+              {/* Placeholder for future features */}
+              <div className="text-center text-muted-foreground text-sm p-4">
+                More features coming soon...
+              </div>
+            </div>
+          </aside>
         </div>
       </main>
 
