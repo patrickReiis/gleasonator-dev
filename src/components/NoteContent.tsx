@@ -196,7 +196,11 @@ export function NoteContent({
       )}
 
       {/* Image modal */}
-      <Dialog open={!!selectedImage} onOpenChange={(open) => !open && setSelectedImage(null)}>
+      <Dialog open={!!selectedImage} onOpenChange={(open) => {
+        if (!open) {
+          setSelectedImage(null);
+        }
+      }}>
         <DialogContent
           className="max-w-5xl w-full max-h-[95vh] p-2 bg-transparent border-0"
           onPointerDownOutside={(e) => {
@@ -205,15 +209,6 @@ export function NoteContent({
             setSelectedImage(null);
           }}
           onEscapeKeyDown={() => setSelectedImage(null)}
-          onInteractOutside={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setSelectedImage(null);
-          }}
-          onClick={(e) => {
-            // Prevent clicks from bubbling up to PostCard
-            e.stopPropagation();
-          }}
         >
           {selectedImage && (
             <div

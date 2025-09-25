@@ -76,6 +76,15 @@ export function PostCard({ event, showReplies = false, clickable = true, highlig
       return;
     }
 
+    // Don't navigate if there's an image modal open
+    // Check if we clicked on an image or if there's a modal open
+    const clickedImage = e.target instanceof HTMLElement && e.target.closest('.gleam-image-gallery button');
+    const modalIsOpen = !!document.querySelector('[role="dialog"]:not([hidden])');
+
+    if (clickedImage || modalIsOpen) {
+      return;
+    }
+
     if (clickable) {
       navigate(`/post/${event.id}`);
     }
