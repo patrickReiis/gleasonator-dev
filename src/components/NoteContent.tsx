@@ -210,11 +210,22 @@ export function NoteContent({
             e.stopPropagation();
             setSelectedImage(null);
           }}
+          onClick={(e) => {
+            // Prevent clicks from bubbling up to PostCard
+            e.stopPropagation();
+          }}
         >
           {selectedImage && (
             <div
               className="relative bg-black/90 rounded-lg p-4"
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              onPointerDown={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
             >
               {/* Close button */}
               <button
