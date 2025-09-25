@@ -23,6 +23,8 @@ export function NoteContent({
     if (e) {
       e.preventDefault();
       e.stopPropagation();
+      // Stop immediate propagation to prevent any other handlers
+      e.stopImmediatePropagation();
     }
     setSelectedImage(null);
   };
@@ -171,15 +173,15 @@ export function NoteContent({
                 setSelectedImage(imageUrl);
               }}
               className={cn(
-                "relative overflow-hidden rounded-lg border border-border hover:opacity-90 transition-opacity",
+                "relative overflow-hidden rounded-lg border border-border hover:opacity-90 transition-opacity bg-muted/20",
                 images.length === 3 && index === 0 ? "row-span-2" : "",
-                images.length > 2 ? "aspect-square" : "aspect-video"
+                images.length > 2 ? "min-h-[200px] max-h-[400px]" : "min-h-[150px] max-h-[300px]"
               )}
             >
               <img
                 src={imageUrl}
                 alt={`Image ${index + 1}`}
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+                className="w-full h-full object-contain hover:scale-105 transition-transform duration-200"
                 loading="lazy"
               />
               {/* Image overlay for multiple images */}
@@ -199,11 +201,16 @@ export function NoteContent({
       <Dialog open={!!selectedImage} onOpenChange={(open) => !open && closeModal()}>
         <DialogContent
           className="max-w-5xl w-full max-h-[95vh] p-2 bg-transparent border-0"
-          onPointerDownOutside={closeModal}
+          onPointerDownOutside={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            closeModal(e);
+          }}
           onEscapeKeyDown={closeModal}
           onInteractOutside={(e) => {
             e.preventDefault();
-            closeModal();
+            e.stopPropagation();
+            closeModal(e);
           }}
         >
           {selectedImage && (
