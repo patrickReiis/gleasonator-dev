@@ -1,16 +1,16 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSeoMeta } from '@unhead/react';
 import { nip19 } from 'nostr-tools';
-import { usePost, usePostReplies } from '@/hooks/usePost';
+import { usePost } from '@/hooks/usePost';
 import { useAuthor } from '@/hooks/useAuthor';
 import { genUserName } from '@/lib/genUserName';
 import { Header } from '@/components/Header';
-import { PostCard } from '@/components/PostCard';
+import { ReplyThread } from '@/components/ReplyThread';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FloatingPostButton } from '@/components/FloatingPostButton';
-import { ArrowLeft, MessageCircle } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 
 export function PostPage() {
   const { eventId: rawEventId } = useParams<{ eventId: string }>();
@@ -30,7 +30,6 @@ export function PostPage() {
   }
 
   const { data: post, isLoading: postLoading, isError: postError } = usePost(eventId);
-  const { data: replies = [], isLoading: repliesLoading } = usePostReplies(eventId);
   const author = useAuthor(post?.pubkey || '');
 
   const metadata = author.data?.metadata;
@@ -164,66 +163,8 @@ export function PostPage() {
             Back
           </Button>
 
-          {/* Main post */}
-          <div className="space-y-4">
-            <PostCard event={post} showReplies={false} clickable={false} />
-
-            {/* Replies section */}
-            {replies.length > 0 && (
-              <div className="pt-4">
-                <div className="flex items-center space-x-2 mb-4 text-sm text-muted-foreground">
-                  <MessageCircle className="w-4 h-4" />
-                  <span>{replies.length} {replies.length === 1 ? 'reply' : 'replies'}</span>
-                </div>
-
-                <div className="space-y-4">
-                  {replies.map((reply) => (
-                    <div key={reply.id} className="ml-4 border-l-2 border-border pl-4">
-                      <PostCard event={reply} showReplies={false} clickable={true} />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Loading state for replies */}
-            {repliesLoading && (
-              <div className="pt-4">
-                <div className="flex items-center space-x-2 mb-4 text-sm text-muted-foreground">
-                  <MessageCircle className="w-4 h-4" />
-                  <span>Loading replies...</span>
-                </div>
-
-                <div className="space-y-4">
-                  {Array.from({ length: 2 }).map((_, i) => (
-                    <div key={i} className="ml-4 border-l-2 border-border pl-4">
-                      <Card className="gleam-card">
-                        <CardContent className="p-6">
-                          <div className="flex space-x-4">
-                            <Skeleton className="w-10 h-10 rounded-full" />
-                            <div className="flex-1 space-y-2">
-                              <Skeleton className="h-4 w-24" />
-                              <Skeleton className="h-4 w-full" />
-                              <Skeleton className="h-4 w-3/4" />
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* No replies state */}
-            {!repliesLoading && replies.length === 0 && (
-              <div className="pt-4 text-center">
-                <p className="text-muted-foreground text-sm">
-                  No replies yet. Be the first to respond!
-                </p>
-              </div>
-            )}
-          </div>
+          {/* Reply thread */}
+          <ReplyThread eventId={eventId} showRoot={true} />
         </div>
       </main>
 

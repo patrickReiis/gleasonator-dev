@@ -6,6 +6,7 @@ import { usePostInteractions } from '@/hooks/useGlobalFeed';
 import { usePostActions } from '@/hooks/usePostActions';
 import { genUserName } from '@/lib/genUserName';
 import { NoteContent } from '@/components/NoteContent';
+import { ReplyIndicator } from '@/components/ReplyIndicator';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -133,6 +134,9 @@ export function PostCard({ event, showReplies = false, clickable = true }: PostC
       </CardHeader>
 
       <CardContent className="pt-0 space-y-4">
+        {/* Reply indicator */}
+        <ReplyIndicator event={event} />
+
         <div className="text-foreground leading-relaxed">
           <NoteContent event={event} />
         </div>
