@@ -169,6 +169,9 @@
 
   .gleam-image-gallery img {
     @apply transition-all duration-200;
+    max-width: 100%;
+    max-height: 400px;
+    object-fit: cover;
   }
 
   .gleam-image-gallery button:hover img {
@@ -177,6 +180,12 @@
 
   .gleam-image-gallery button:focus {
     @apply outline-none ring-2 ring-primary ring-offset-2;
+  }
+
+  /* Single image display */
+  .gleam-image-gallery.single-image img {
+    max-height: 500px;
+    object-fit: contain;
   }
 
   /* Video player styling */

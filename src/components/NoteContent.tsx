@@ -150,7 +150,7 @@ export function NoteContent({
       {images.length > 0 && (
         <div className={cn(
           "gleam-image-gallery grid gap-2",
-          images.length === 1 ? "grid-cols-1" :
+          images.length === 1 ? "grid-cols-1 single-image" :
           images.length === 2 ? "grid-cols-2" :
           images.length === 3 ? "grid-cols-2" :
           "grid-cols-2"
@@ -158,7 +158,10 @@ export function NoteContent({
           {images.map((imageUrl, index) => (
             <button
               key={index}
-              onClick={() => setSelectedImage(imageUrl)}
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent PostCard navigation
+                setSelectedImage(imageUrl);
+              }}
               className={cn(
                 "relative overflow-hidden rounded-lg border border-border hover:opacity-90 transition-opacity",
                 images.length === 3 && index === 0 ? "row-span-2" : "",
@@ -186,17 +189,29 @@ export function NoteContent({
 
       {/* Image modal */}
       <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
-        <DialogContent className="max-w-4xl w-full max-h-[90vh] p-0 bg-transparent border-0">
+        <DialogContent className="max-w-5xl w-full max-h-[95vh] p-2 bg-transparent border-0">
           {selectedImage && (
-            <div className="relative">
+            <div className="relative bg-black/90 rounded-lg p-4">
+              {/* Close button */}
+              <button
+                onClick={() => setSelectedImage(null)}
+                className="absolute top-4 right-4 z-10 w-10 h-10 bg-white/90 hover:bg-white text-black rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-lg"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+
               <img
                 src={selectedImage}
                 alt="Full size image"
-                className="w-full h-auto max-h-[90vh] object-contain rounded-lg"
+                className="w-full h-auto max-h-[85vh] object-contain rounded-lg"
+                style={{ maxWidth: '100%', maxHeight: '85vh' }}
               />
+
               {/* Navigation for multiple images */}
               {images.length > 1 && (
-                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/80 text-white px-3 py-1 rounded-full text-sm">
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white/90 text-black px-4 py-2 rounded-full text-sm font-medium shadow-lg">
                   {images.indexOf(selectedImage) + 1} / {images.length}
                 </div>
               )}
