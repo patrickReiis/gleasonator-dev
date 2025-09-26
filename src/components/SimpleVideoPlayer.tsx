@@ -124,7 +124,10 @@ export function SimpleVideoPlayer({ src, title = "Video", className }: SimpleVid
   };
 
   return (
-    <Card className={className} onClick={(e) => e.stopPropagation()}>
+    <Card className={className} onClick={(e) => {
+      e.stopPropagation();
+      togglePlay();
+    }}>
       <CardContent className="p-0">
         <div
           ref={containerRef}

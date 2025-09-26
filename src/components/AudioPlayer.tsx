@@ -80,7 +80,10 @@ export function AudioPlayer({ src, title = "Audio", className }: AudioPlayerProp
   };
 
   return (
-    <Card className={className} onClick={(e) => e.stopPropagation()}>
+    <Card className={className} onClick={(e) => {
+      e.stopPropagation();
+      togglePlay();
+    }}>
       <CardContent className="p-4">
         <audio
           ref={audioRef}
