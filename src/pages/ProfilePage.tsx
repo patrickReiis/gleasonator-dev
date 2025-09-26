@@ -59,6 +59,17 @@ export function ProfilePage() {
   // Follow/unfollow functionality
   const followUser = useFollowUser(pubkey);
 
+  // Debug logging
+  console.log('👤 Profile Page Debug:', {
+    pubkey,
+    isOwnProfile,
+    userExists: !!user,
+    userPubkey: user?.pubkey,
+    isFollowing: followUser.isFollowing,
+    isCheckingFollow: followUser.isCheckingFollow,
+    isLoading: followUser.isLoading,
+  });
+
   const metadata = author.data?.metadata;
   const displayName = metadata?.display_name || metadata?.name || (pubkey ? genUserName(pubkey) : '');
   const username = metadata?.name || (pubkey ? genUserName(pubkey) : '');
@@ -182,27 +193,40 @@ export function ProfilePage() {
                     <div className="flex gap-2">
                       {/* Follow/Unfollow button for other users' profiles */}
                       {!isOwnProfile && user && (
-                        <Button
-                          onClick={followUser.toggleFollow}
-                          disabled={followUser.isLoading || followUser.isCheckingFollow}
-                          variant={followUser.isFollowing ? "outline" : "default"}
-                          size="sm"
-                          className="gleam-button hover:bg-primary/10 hover:border-primary/50 transition-all duration-200"
-                        >
-                          {followUser.isLoading || followUser.isCheckingFollow ? (
-                            <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
-                          ) : followUser.isFollowing ? (
-                            <UserMinus className="w-4 h-4 mr-2" />
-                          ) : (
-                            <UserPlus className="w-4 h-4 mr-2" />
-                          )}
-                          {followUser.isLoading || followUser.isCheckingFollow
-                            ? 'Loading...'
-                            : followUser.isFollowing
-                              ? 'Unfollow'
-                              : 'Follow'
-                          }
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={followUser.toggleFollow}
+                            disabled={followUser.isLoading || followUser.isCheckingFollow}
+                            variant={followUser.isFollowing ? "outline" : "default"}
+                            size="sm"
+                            className="gleam-button hover:bg-primary/10 hover:border-primary/50 transition-all duration-200"
+                          >
+                            {followUser.isLoading || followUser.isCheckingFollow ? (
+                              <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
+                            ) : followUser.isFollowing ? (
+                              <UserMinus className="w-4 h-4 mr-2" />
+                            ) : (
+                              <UserPlus className="w-4 h-4 mr-2" />
+                            )}
+                            {followUser.isLoading || followUser.isCheckingFollow
+                              ? 'Loading...'
+                              : followUser.isFollowing
+                                ? 'Unfollow'
+                                : 'Follow'
+                            }
+                          </Button>
+
+                          {/* Debug refresh button - remove this later */}
+                          <Button
+                            onClick={() => window.location.reload()}
+                            variant="ghost"
+                            size="sm"
+                            className="text-xs"
+                            title="Debug: Refresh page"
+                          >
+                            🔄
+                          </Button>
+                        </div>
                       )}
 
                       {/* Edit profile button for own profile */}
