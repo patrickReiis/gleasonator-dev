@@ -8,7 +8,7 @@ import { FloatingPostButton } from '@/components/FloatingPostButton';
 const Index = () => {
   useSeoMeta({
     title: 'Gleasonator - Connect on Nostr',
-    description: 'A modern Nostr client with a nostalgic 2010s aesthetic. Connect, share, and discover on the decentralized social web.',
+    description: 'Don\'t let your memes be dreams. Let\'s work together to create the future that we believe in.',
   });
 
   return (

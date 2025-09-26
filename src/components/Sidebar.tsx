@@ -118,7 +118,7 @@ export function Sidebar() {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            A modern Nostr client with a nostalgic 2010s aesthetic. Connect, share, and discover on the decentralized social web.
+            Don't let your memes be dreams. Let's work together to create the future that we believe in.
           </p>
 
           <div className="flex flex-wrap gap-2">
