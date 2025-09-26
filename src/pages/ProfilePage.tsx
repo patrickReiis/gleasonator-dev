@@ -5,6 +5,7 @@ import { nip19 } from 'nostr-tools';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useAuthor } from '@/hooks/useAuthor';
 import { useUserPosts, useUserStats } from '@/hooks/useUserPosts';
+import { useFollowUser } from '@/hooks/useFollowUser';
 import { genUserName } from '@/lib/genUserName';
 import { Header } from '@/components/Header';
 import { PostCard } from '@/components/PostCard';
@@ -16,7 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { FloatingPostButton } from '@/components/FloatingPostButton';
 import { EditProfileForm } from '@/components/EditProfileForm';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { ArrowLeft, MapPin, Link as LinkIcon, Users, MessageSquare, Heart, Edit2 } from 'lucide-react';
+import { ArrowLeft, MapPin, Link as LinkIcon, Users, MessageSquare, Heart, Edit2, UserPlus, UserMinus } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useInView } from 'react-intersection-observer';
 
@@ -54,6 +55,9 @@ export function ProfilePage() {
 
   const { data: statsData, isLoading: statsLoading } = useUserStats(pubkey);
   const { ref, inView } = useInView();
+
+  // Follow/unfollow functionality
+  const followUser = useFollowUser(pubkey);
 
   const metadata = author.data?.metadata;
   const displayName = metadata?.display_name || metadata?.name || (pubkey ? genUserName(pubkey) : '');
@@ -174,37 +178,65 @@ export function ProfilePage() {
                       )}
                     </div>
 
-                    {/* Edit profile button for own profile */}
-                    {isOwnProfile && (
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="gleam-button hover:bg-primary/10 hover:border-primary/50 transition-all duration-200"
-                          >
-                            <Edit2 className="w-4 h-4 mr-2" />
-                            Edit Profile
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-hidden gleam-card border-2">
-                          <DialogHeader className="border-b border-border/50 pb-4">
-                            <DialogTitle className="flex items-center gap-3 text-xl">
-                              <div className="w-8 h-8 rounded-lg gleam-gradient flex items-center justify-center">
-                                <Edit2 className="w-4 h-4 text-white" />
-                              </div>
-                              Edit Your Profile
-                            </DialogTitle>
-                            <p className="text-sm text-muted-foreground mt-2">
-                              Update your profile information and let others know more about you.
-                            </p>
-                          </DialogHeader>
-                          <div className="overflow-y-auto max-h-[calc(85vh-120px)] py-4 px-1">
-                            <EditProfileForm />
-                          </div>
-                        </DialogContent>
-                      </Dialog>
-                    )}
+                    {/* Action buttons */}
+                    <div className="flex gap-2">
+                      {/* Follow/Unfollow button for other users' profiles */}
+                      {!isOwnProfile && user && (
+                        <Button
+                          onClick={followUser.toggleFollow}
+                          disabled={followUser.isLoading || followUser.isCheckingFollow}
+                          variant={followUser.isFollowing ? "outline" : "default"}
+                          size="sm"
+                          className="gleam-button hover:bg-primary/10 hover:border-primary/50 transition-all duration-200"
+                        >
+                          {followUser.isLoading || followUser.isCheckingFollow ? (
+                            <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
+                          ) : followUser.isFollowing ? (
+                            <UserMinus className="w-4 h-4 mr-2" />
+                          ) : (
+                            <UserPlus className="w-4 h-4 mr-2" />
+                          )}
+                          {followUser.isLoading || followUser.isCheckingFollow
+                            ? 'Loading...'
+                            : followUser.isFollowing
+                              ? 'Unfollow'
+                              : 'Follow'
+                          }
+                        </Button>
+                      )}
+
+                      {/* Edit profile button for own profile */}
+                      {isOwnProfile && (
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="gleam-button hover:bg-primary/10 hover:border-primary/50 transition-all duration-200"
+                            >
+                              <Edit2 className="w-4 h-4 mr-2" />
+                              Edit Profile
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-hidden gleam-card border-2">
+                            <DialogHeader className="border-b border-border/50 pb-4">
+                              <DialogTitle className="flex items-center gap-3 text-xl">
+                                <div className="w-8 h-8 rounded-lg gleam-gradient flex items-center justify-center">
+                                  <Edit2 className="w-4 h-4 text-white" />
+                                </div>
+                                Edit Your Profile
+                              </DialogTitle>
+                              <p className="text-sm text-muted-foreground mt-2">
+                                Update your profile information and let others know more about you.
+                              </p>
+                            </DialogHeader>
+                            <div className="overflow-y-auto max-h-[calc(85vh-120px)] py-4 px-1">
+                              <EditProfileForm />
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      )}
+                    </div>
                   </div>
 
                   {bio && (
