@@ -2,15 +2,24 @@ import { useNostr } from '@nostrify/react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import type { NostrEvent } from '@nostrify/nostrify';
 import { deduplicateEvents, sortEventsByDate } from '@/lib/eventUtils';
+import { useUserContacts } from './useUserContacts';
+import { useCurrentUser } from './useCurrentUser';
 
 export function useGlobalFeed() {
   const { nostr } = useNostr();
+  const { user } = useCurrentUser();
+  const { data: followedPubkeys } = useUserContacts();
 
   return useInfiniteQuery({
-    queryKey: ['global-feed'],
+    queryKey: ['global-feed', user?.pubkey, followedPubkeys],
     queryFn: async ({ pageParam, signal }) => {
       const filter: any = { kinds: [1], limit: 20 };
       if (pageParam) filter.until = pageParam;
+
+      // If user is logged in and has followed users, filter by those pubkeys
+      if (user?.pubkey && followedPubkeys && followedPubkeys.length > 0) {
+        filter.authors = [user.pubkey, ...followedPubkeys]; // Include user's own posts + followed users
+      }
 
       const events = await nostr.query([filter], {
         signal: AbortSignal.any([signal, AbortSignal.timeout(3000)])
@@ -31,6 +40,7 @@ export function useGlobalFeed() {
         pageParams: data.pageParams,
       };
     },
+    enabled: !user || (followedPubkeys !== undefined), // Only run when we know if user has contacts or not
   });
 }
 

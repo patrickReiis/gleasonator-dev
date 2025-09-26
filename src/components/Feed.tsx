@@ -8,16 +8,16 @@ import { RelaySelector } from '@/components/RelaySelector';
 import { AlertCircle, Wifi } from 'lucide-react';
 
 export function Feed() {
-  const { 
-    data, 
-    fetchNextPage, 
-    hasNextPage, 
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
     isFetchingNextPage,
     isLoading,
     isError,
     error
   } = useGlobalFeed();
-  
+
   const { ref, inView } = useInView();
 
   useEffect(() => {
@@ -93,10 +93,10 @@ export function Feed() {
             </div>
             <div>
               <h3 className="text-lg font-semibold text-foreground">
-                No posts found
+                No posts from people you follow
               </h3>
               <p className="text-muted-foreground mt-1">
-                Try switching to a different relay to discover content
+                Follow more people or try switching to a different relay to see more content
               </p>
             </div>
             <RelaySelector className="w-full" />
@@ -111,7 +111,7 @@ export function Feed() {
       {posts.map((post) => (
         <PostCard key={`${post.id}-${post.created_at}`} event={post} />
       ))}
-      
+
       {hasNextPage && (
         <div ref={ref} className="py-4">
           {isFetchingNextPage && (
