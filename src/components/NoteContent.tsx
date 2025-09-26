@@ -6,6 +6,8 @@ import { useAuthor } from '@/hooks/useAuthor';
 import { genUserName } from '@/lib/genUserName';
 import { cn } from '@/lib/utils';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { AudioPlayer } from './AudioPlayer';
+import { SimpleVideoPlayer } from './SimpleVideoPlayer';
 
 interface NoteContentProps {
   event: NostrEvent;
@@ -18,6 +20,7 @@ export function NoteContent({
   className,
 }: NoteContentProps) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [expandedVideo, setExpandedVideo] = useState<{ url: string; title?: string } | null>(null);
 
   const closeModal = (e?: any) => {
     if (e) {
@@ -27,26 +30,43 @@ export function NoteContent({
     setSelectedImage(null);
   };
 
-  // Extract images and text content separately
-  const { textContent, images } = useMemo(() => {
+  const closeVideoModal = (e?: any) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setExpandedVideo(null);
+  };
+
+  // Extract media files and text content separately
+  const { textContent, images, audioFiles, videoFiles } = useMemo(() => {
     const text = event.content;
 
-    // Regex to match image URLs (common image formats)
+    // Regex to match different media types
     const imageRegex = /(https?:\/\/[^\s]+\.(?:jpg|jpeg|png|gif|webp|svg)(?:\?[^\s]*)?)/gi;
+    const audioRegex = /(https?:\/\/[^\s]+\.(?:mp3|wav|ogg|m4a|flac|aac|weba)(?:\?[^\s]*)?)/gi;
+    const videoRegex = /(https?:\/\/[^\s]+\.(?:mp4|webm|ogv|mov|avi|mkv|3gp)(?:\?[^\s]*)?)/gi;
 
-    // Extract all image URLs
+    // Extract all media URLs
     const imageMatches = Array.from(text.matchAll(imageRegex));
-    const extractedImages = imageMatches.map(match => match[1]);
+    const audioMatches = Array.from(text.matchAll(audioRegex));
+    const videoMatches = Array.from(text.matchAll(videoRegex));
 
-    // Remove image URLs from text content
+    const extractedImages = imageMatches.map(match => match[1]);
+    const extractedAudio = audioMatches.map(match => match[1]);
+    const extractedVideos = videoMatches.map(match => match[1]);
+
+    // Remove all media URLs from text content
     let cleanText = text;
-    extractedImages.forEach(imageUrl => {
-      cleanText = cleanText.replace(imageUrl, '').replace(/\n\n+/g, '\n\n').trim();
+    [...extractedImages, ...extractedAudio, ...extractedVideos].forEach(mediaUrl => {
+      cleanText = cleanText.replace(mediaUrl, '').replace(/\n\n+/g, '\n\n').trim();
     });
 
     return {
       textContent: cleanText,
-      images: extractedImages
+      images: extractedImages,
+      audioFiles: extractedAudio,
+      videoFiles: extractedVideos
     };
   }, [event.content]);
 
@@ -72,10 +92,13 @@ export function NoteContent({
       }
 
       if (url) {
-        // Skip image URLs as they're handled separately
+        // Skip media URLs as they're handled separately
         const isImageUrl = /\.(jpg|jpeg|png|gif|webp|svg)(\?[^\s]*)?$/i.test(url);
-        if (!isImageUrl) {
-          // Handle non-image URLs
+        const isAudioUrl = /\.(mp3|wav|ogg|m4a|flac|aac|weba)(\?[^\s]*)?$/i.test(url);
+        const isVideoUrl = /\.(mp4|webm|ogv|mov|avi|mkv|3gp)(\?[^\s]*)?$/i.test(url);
+
+        if (!isImageUrl && !isAudioUrl && !isVideoUrl) {
+          // Handle non-media URLs
           parts.push(
             <a
               key={`url-${keyCounter++}`}
@@ -248,6 +271,111 @@ export function NoteContent({
               {images.length > 1 && (
                 <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white/90 text-black px-4 py-2 rounded-full text-sm font-medium shadow-lg">
                   {images.indexOf(selectedImage) + 1} / {images.length}
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Audio files section */}
+      {audioFiles.length > 0 && (
+        <div className="space-y-3">
+          <h4 className="text-sm font-medium text-muted-foreground">Audio Files</h4>
+          <div className="grid gap-3">
+            {audioFiles.map((audioUrl, index) => (
+              <AudioPlayer
+                key={`audio-${index}`}
+                src={audioUrl}
+                title={`Audio ${index + 1}`}
+                className="w-full"
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Video files section */}
+      {videoFiles.length > 0 && (
+        <div className="space-y-3">
+          <h4 className="text-sm font-medium text-muted-foreground">Video Files</h4>
+          <div className="grid gap-3">
+            {videoFiles.map((videoUrl, index) => (
+              <div key={`video-${index}`} className="relative group">
+                <SimpleVideoPlayer
+                  src={videoUrl}
+                  title={`Video ${index + 1}`}
+                  className="w-full"
+                />
+                {/* Expand button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setExpandedVideo({ url: videoUrl, title: `Video ${index + 1}` });
+                  }}
+                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 text-white p-2 rounded-lg hover:bg-black/70"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                  </svg>
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Video modal for fullscreen viewing */}
+      <Dialog open={!!expandedVideo} onOpenChange={(open) => {
+        if (!open) {
+          setExpandedVideo(null);
+        }
+      }}>
+        <DialogContent
+          className="max-w-6xl w-full max-h-[95vh] p-2 bg-transparent border-0"
+          onPointerDownOutside={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setExpandedVideo(null);
+          }}
+          onEscapeKeyDown={() => setExpandedVideo(null)}
+        >
+          {expandedVideo && (
+            <div
+              className="relative bg-black rounded-lg p-4"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              onPointerDown={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+            >
+              {/* Close button */}
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setExpandedVideo(null);
+                }}
+                className="absolute top-4 right-4 z-10 w-10 h-10 bg-white/90 hover:bg-white text-black rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-lg"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+
+              <SimpleVideoPlayer
+                src={expandedVideo.url}
+                title={expandedVideo.title}
+                className="w-full"
+              />
+
+              {/* Video counter */}
+              {videoFiles.length > 1 && (
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white/90 text-black px-4 py-2 rounded-full text-sm font-medium shadow-lg">
+                  {videoFiles.indexOf(expandedVideo.url) + 1} / {videoFiles.length}
                 </div>
               )}
             </div>
