@@ -96,7 +96,7 @@ export function SimpleVideoPlayer({ src, title = "Video", className }: SimpleVid
   // Auto-hide controls when playing
   useEffect(() => {
     let timeout: NodeJS.Timeout;
-    
+
     if (isPlaying) {
       timeout = setTimeout(() => setShowControls(false), 3000);
     } else {
@@ -124,9 +124,9 @@ export function SimpleVideoPlayer({ src, title = "Video", className }: SimpleVid
   };
 
   return (
-    <Card className={className}>
+    <Card className={className} onClick={(e) => e.stopPropagation()}>
       <CardContent className="p-0">
-        <div 
+        <div
           ref={containerRef}
           className="relative bg-black rounded-lg overflow-hidden"
           onMouseMove={handleMouseMove}
@@ -138,17 +138,23 @@ export function SimpleVideoPlayer({ src, title = "Video", className }: SimpleVid
             src={src}
             preload="metadata"
             className="w-full h-auto max-h-[400px] object-contain"
-            onClick={togglePlay}
+            onClick={(e) => {
+              e.stopPropagation();
+              togglePlay();
+            }}
             playsInline
           />
-          
+
           {/* Play/Pause overlay */}
           {!isPlaying && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/30">
               <Button
                 size="icon"
                 className="w-16 h-16 rounded-full bg-white/20 hover:bg-white/30 text-white"
-                onClick={togglePlay}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  togglePlay();
+                }}
               >
                 <Play className="w-8 h-8 ml-1" />
               </Button>
@@ -165,7 +171,11 @@ export function SimpleVideoPlayer({ src, title = "Video", className }: SimpleVid
                   min="0"
                   max={duration || 100}
                   value={currentTime}
-                  onChange={handleSeek}
+                  onChange={(e) => {
+                    e.stopPropagation();
+                    handleSeek(e);
+                  }}
+                  onClick={(e) => e.stopPropagation()}
                   className="w-full h-1 bg-white/30 rounded-lg appearance-none cursor-pointer"
                 />
                 <div className="flex justify-between text-xs text-white">
@@ -180,7 +190,10 @@ export function SimpleVideoPlayer({ src, title = "Video", className }: SimpleVid
                   <Button
                     size="icon"
                     variant="ghost"
-                    onClick={togglePlay}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      togglePlay();
+                    }}
                     className="h-8 w-8 text-white hover:bg-white/20"
                   >
                     {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4 ml-0.5" />}
@@ -189,7 +202,10 @@ export function SimpleVideoPlayer({ src, title = "Video", className }: SimpleVid
                   <Button
                     size="icon"
                     variant="ghost"
-                    onClick={toggleMute}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleMute();
+                    }}
                     className="h-8 w-8 text-white hover:bg-white/20"
                   >
                     {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
@@ -199,7 +215,10 @@ export function SimpleVideoPlayer({ src, title = "Video", className }: SimpleVid
                 <Button
                   size="icon"
                   variant="ghost"
-                  onClick={toggleFullscreen}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleFullscreen();
+                  }}
                   className="h-8 w-8 text-white hover:bg-white/20"
                 >
                   {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}

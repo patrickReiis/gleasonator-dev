@@ -80,7 +80,7 @@ export function AudioPlayer({ src, title = "Audio", className }: AudioPlayerProp
   };
 
   return (
-    <Card className={className}>
+    <Card className={className} onClick={(e) => e.stopPropagation()}>
       <CardContent className="p-4">
         <audio
           ref={audioRef}
@@ -88,7 +88,7 @@ export function AudioPlayer({ src, title = "Audio", className }: AudioPlayerProp
           preload="metadata"
           className="hidden"
         />
-        
+
         {/* Audio title */}
         <div className="mb-3">
           <h4 className="font-medium text-sm truncate">{title}</h4>
@@ -101,7 +101,11 @@ export function AudioPlayer({ src, title = "Audio", className }: AudioPlayerProp
             min="0"
             max={duration || 100}
             value={currentTime}
-            onChange={handleSeek}
+            onChange={(e) => {
+              e.stopPropagation();
+              handleSeek(e);
+            }}
+            onClick={(e) => e.stopPropagation()}
             className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
           />
           <div className="flex justify-between text-xs text-muted-foreground">
@@ -116,24 +120,33 @@ export function AudioPlayer({ src, title = "Audio", className }: AudioPlayerProp
             <Button
               size="icon"
               variant="ghost"
-              onClick={() => skip(-10)}
+              onClick={(e) => {
+                e.stopPropagation();
+                skip(-10);
+              }}
               className="h-8 w-8"
             >
               <SkipBack className="h-4 w-4" />
             </Button>
-            
+
             <Button
               size="icon"
-              onClick={togglePlay}
+              onClick={(e) => {
+                e.stopPropagation();
+                togglePlay();
+              }}
               className="h-10 w-10"
             >
               {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4 ml-0.5" />}
             </Button>
-            
+
             <Button
               size="icon"
               variant="ghost"
-              onClick={() => skip(10)}
+              onClick={(e) => {
+                e.stopPropagation();
+                skip(10);
+              }}
               className="h-8 w-8"
             >
               <SkipForward className="h-4 w-4" />
@@ -143,7 +156,10 @@ export function AudioPlayer({ src, title = "Audio", className }: AudioPlayerProp
           <Button
             size="icon"
             variant="ghost"
-            onClick={toggleMute}
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleMute();
+            }}
             className="h-8 w-8"
           >
             {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
