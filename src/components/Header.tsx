@@ -79,31 +79,7 @@ export function Header() {
             {/* Login area */}
             <LoginArea className="max-w-60" />
 
-            {/* Settings dropdown for mobile */}
-            {user && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm">
-                    <Settings className="w-4 h-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem className="md:hidden">
-                    <div className="w-full">
-                      <div className="text-sm font-medium mb-2">Relay</div>
-                      <RelaySelector className="w-full" />
-                    </div>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator className="md:hidden" />
-                  <DropdownMenuItem>
-                    Profile Settings
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    Preferences
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+            
           </div>
         </div>
       </div>
