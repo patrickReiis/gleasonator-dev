@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Heart, MessageCircle, Repeat2, Share } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -24,6 +25,7 @@ interface PostCardProps {
 export function PostCard({ event, showReplies = false, clickable = true, highlighted = false }: PostCardProps) {
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [replyContent, setReplyContent] = useState('');
+  const [selectedProfileImage, setSelectedProfileImage] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const author = useAuthor(event.pubkey);
@@ -64,6 +66,15 @@ export function PostCard({ event, showReplies = false, clickable = true, highlig
     setShowReplyForm(false);
   };
 
+  // Close profile image modal
+  const closeProfileImageModal = (e?: any) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setSelectedProfileImage(null);
+  };
+
   const handleCardClick = (e: React.MouseEvent) => {
     // Don't navigate if clicking on interactive elements
     if (
@@ -91,16 +102,21 @@ export function PostCard({ event, showReplies = false, clickable = true, highlig
   };
 
   return (
-    <Card
-      className={`gleam-card ${clickable ? 'gleam-card-clickable cursor-pointer transition-all duration-200 group relative' : ''} ${highlighted ? 'border-2 border-green-500 shadow-[0_0_20px_rgba(34,197,94,0.3)]' : ''}`}
-      onClick={handleCardClick}
-    >
+    <>
+      <Card
+        className={`gleam-card ${clickable ? 'gleam-card-clickable cursor-pointer transition-all duration-200 group relative' : ''} ${highlighted ? 'border-2 border-green-500 shadow-[0_0_20px_rgba(34,197,94,0.3)]' : ''}`}
+        onClick={handleCardClick}
+      >
       <CardHeader className="pb-3">
         <div className="flex items-start space-x-3">
           <button
             onClick={(e) => {
               e.stopPropagation();
-              navigate(`/profile/${event.pubkey}`);
+              if (profileImage) {
+                setSelectedProfileImage(profileImage);
+              } else {
+                navigate(`/profile/${event.pubkey}`);
+              }
             }}
             className="hover:scale-105 transition-transform"
           >
@@ -244,5 +260,59 @@ export function PostCard({ event, showReplies = false, clickable = true, highlig
         )}
       </CardContent>
     </Card>
+
+    {/* Profile image modal */}
+    <Dialog open={!!selectedProfileImage} onOpenChange={(open) => {
+      if (!open) {
+        setSelectedProfileImage(null);
+      }
+    }}>
+      <DialogContent
+        className="max-w-5xl w-full max-h-[95vh] p-2 bg-transparent border-0"
+        onPointerDownOutside={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setSelectedProfileImage(null);
+        }}
+        onEscapeKeyDown={() => setSelectedProfileImage(null)}
+      >
+        {selectedProfileImage && (
+          <div
+            className="relative bg-black/90 rounded-lg p-4"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            onPointerDown={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+          >
+            {/* Close button */}
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setSelectedProfileImage(null);
+              }}
+              className="absolute top-4 right-4 z-10 w-10 h-10 bg-white/90 hover:bg-white text-black rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-lg"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            <img
+              src={selectedProfileImage}
+              alt="Full size profile picture"
+              className="w-full h-auto max-h-[85vh] object-contain rounded-lg"
+              style={{ maxWidth: '100%', maxHeight: '85vh' }}
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }

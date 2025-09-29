@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSeoMeta } from '@unhead/react';
 import { useEffect } from 'react';
@@ -25,6 +26,7 @@ export function ProfilePage() {
   const { identifier } = useParams<{ identifier: string }>();
   const navigate = useNavigate();
   const { user } = useCurrentUser();
+  const [selectedProfileImage, setSelectedProfileImage] = useState<string | null>(null);
 
   // Convert npub to hex if needed
   let pubkey = identifier || '';
@@ -72,6 +74,15 @@ export function ProfilePage() {
   const stats = statsData?.pages[0];
   const isOwnProfile = user?.pubkey === pubkey;
 
+  // Close profile image modal
+  const closeProfileImageModal = (e?: any) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setSelectedProfileImage(null);
+  };
+
   // Infinite scroll
   useEffect(() => {
     if (inView && hasNextPage) {
@@ -113,10 +124,11 @@ export function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+    <>
+      <div className="min-h-screen bg-background">
+        <Header />
 
-      <main className="container mx-auto px-4 py-6 max-w-4xl">
+        <main className="container mx-auto px-4 py-6 max-w-4xl">
         <div className="space-y-6">
           {/* Back button */}
           <Button
@@ -145,12 +157,23 @@ export function ProfilePage() {
               <div className="flex flex-col sm:flex-row gap-4">
                 {/* Avatar */}
                 <div className={`${bannerImage ? '-mt-16 sm:-mt-20' : ''} relative`}>
-                  <Avatar className="gleam-avatar w-24 h-24 sm:w-32 sm:h-32 border-4 border-background">
-                    <AvatarImage src={profileImage} alt={displayName} />
-                    <AvatarFallback className="bg-primary/10 text-primary font-bold text-2xl">
-                      {displayName.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (profileImage) {
+                        setSelectedProfileImage(profileImage);
+                      }
+                    }}
+                    className="hover:scale-105 transition-transform"
+                    disabled={!profileImage}
+                  >
+                    <Avatar className="gleam-avatar w-24 h-24 sm:w-32 sm:h-32 border-4 border-background">
+                      <AvatarImage src={profileImage} alt={displayName} />
+                      <AvatarFallback className="bg-primary/10 text-primary font-bold text-2xl">
+                        {displayName.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </button>
                 </div>
 
                 {/* Profile info */}
@@ -396,5 +419,59 @@ export function ProfilePage() {
 
       <FloatingPostButton />
     </div>
+
+    {/* Profile image modal */}
+    <Dialog open={!!selectedProfileImage} onOpenChange={(open) => {
+      if (!open) {
+        setSelectedProfileImage(null);
+      }
+    }}>
+      <DialogContent
+        className="max-w-5xl w-full max-h-[95vh] p-2 bg-transparent border-0"
+        onPointerDownOutside={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setSelectedProfileImage(null);
+        }}
+        onEscapeKeyDown={() => setSelectedProfileImage(null)}
+      >
+        {selectedProfileImage && (
+          <div
+            className="relative bg-black/90 rounded-lg p-4"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            onPointerDown={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+          >
+            {/* Close button */}
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setSelectedProfileImage(null);
+              }}
+              className="absolute top-4 right-4 z-10 w-10 h-10 bg-white/90 hover:bg-white text-black rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-lg"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            <img
+              src={selectedProfileImage}
+              alt="Full size profile picture"
+              className="w-full h-auto max-h-[85vh] object-contain rounded-lg"
+              style={{ maxWidth: '100%', maxHeight: '85vh' }}
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }
