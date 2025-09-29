@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { AudioPlayer } from './AudioPlayer';
 import { SimpleVideoPlayer } from './SimpleVideoPlayer';
+import { QuotePost } from './QuotePost';
 
 interface NoteContentProps {
   event: NostrEvent;
@@ -75,7 +76,7 @@ export function NoteContent({
     const text = textContent;
 
     // Regex to find URLs, Nostr references, and hashtags
-    const regex = /(https?:\/\/[^\s]+)|nostr:(npub1|note1|nprofile1|nevent1)([023456789acdefghjklmnpqrstuvwxyz]+)|(#\w+)/g;
+    const regex = /(https?:\/\/[^\s]+)|(?:nostr:)?(npub1|note1|nprofile1|nevent1|naddr1)([023456789acdefghjklmnpqrstuvwxyz]+)|(#\w+)/g;
 
     const parts: React.ReactNode[] = [];
     let lastIndex = 0;
@@ -117,10 +118,17 @@ export function NoteContent({
           const nostrId = `${nostrPrefix}${nostrData}`;
           const decoded = nip19.decode(nostrId);
 
-          if (decoded.type === 'npub') {
-            const pubkey = decoded.data;
+          if (decoded.type === 'npub' || decoded.type === 'nprofile') {
+            const pubkey = decoded.type === 'npub' ? decoded.data : decoded.data.pubkey;
             parts.push(
               <NostrMention key={`mention-${keyCounter++}`} pubkey={pubkey} />
+            );
+          } else if (decoded.type === 'note' || decoded.type === 'nevent' || decoded.type === 'naddr') {
+            // Render quote posts for these identifier types
+            parts.push(
+              <div key={`quote-${keyCounter++}`} className="my-3">
+                <QuotePost identifier={nostrId} />
+              </div>
             );
           } else {
             // For other types, just show as a link
