@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { nip19 } from 'nostr-tools';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useNostr } from '@/hooks/useNostr';
 import { useAuthor } from '@/hooks/useAuthor';
 import { genUserName } from '@/lib/genUserName';
@@ -45,20 +45,16 @@ function QuotePostAuthor({ pubkey, createdAt }: QuotePostAuthorProps) {
   return (
     <div className="flex items-center space-x-2">
       <Avatar className="h-6 w-6">
+        {metadata?.picture && (
+          <AvatarImage
+            src={metadata.picture}
+            alt={displayName}
+            className="object-cover"
+          />
+        )}
         <AvatarFallback className="text-xs">
           {(metadata?.name || metadata?.display_name || displayName).slice(0, 1).toUpperCase()}
         </AvatarFallback>
-        {metadata?.picture && (
-          <img
-            src={metadata.picture}
-            alt={displayName}
-            className="h-full w-full object-cover"
-            onError={(e) => {
-              e.currentTarget.style.display = 'none';
-              e.currentTarget.parentElement!.querySelector('.AvatarFallback')!.classList.remove('hidden');
-            }}
-          />
-        )}
       </Avatar>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-foreground truncate">
