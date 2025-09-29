@@ -24,7 +24,7 @@ export function QuotePost({ identifier, className }: QuotePostProps) {
     queryFn: async ({ signal }) => {
       try {
         const decoded = nip19.decode(identifier);
-        
+
         let filter;
         switch (decoded.type) {
           case 'note': {
@@ -33,20 +33,20 @@ export function QuotePost({ identifier, className }: QuotePostProps) {
           }
           case 'nevent': {
             const { id, relays, author } = decoded.data;
-            filter = { 
-              ids: [id], 
+            filter = {
+              ids: [id],
               ...(author && { authors: [author] }),
-              limit: 1 
+              limit: 1
             };
             break;
           }
           case 'naddr': {
             const { kind, pubkey, identifier: d } = decoded.data;
-            filter = { 
-              kinds: [kind], 
-              authors: [pubkey], 
+            filter = {
+              kinds: [kind],
+              authors: [pubkey],
               '#d': [d],
-              limit: 1 
+              limit: 1
             };
             break;
           }
@@ -54,8 +54,8 @@ export function QuotePost({ identifier, className }: QuotePostProps) {
             throw new Error('Unsupported NIP-19 identifier type');
         }
 
-        const events = await nostr.query([filter], { 
-          signal: AbortSignal.any([signal, AbortSignal.timeout(3000)]) 
+        const events = await nostr.query([filter], {
+          signal: AbortSignal.any([signal, AbortSignal.timeout(3000)])
         });
 
         if (events.length === 0) {
@@ -78,7 +78,7 @@ export function QuotePost({ identifier, className }: QuotePostProps) {
         <CardContent className="p-4">
           <div className="text-center text-muted-foreground">
             <p className="text-sm">Post not found</p>
-            <Link 
+            <Link
               to={`/${identifier}`}
               className="text-xs text-blue-500 hover:underline mt-1 inline-block"
             >
@@ -92,7 +92,7 @@ export function QuotePost({ identifier, className }: QuotePostProps) {
 
   if (isLoading) {
     return (
-      <Card className={cn("border-muted", className)}>
+      <Card className={cn("border-l-4 border-l-green-500 border-muted bg-background", className)}>
         <CardContent className="p-4 space-y-3">
           <div className="flex items-center space-x-3">
             <Skeleton className="h-8 w-8 rounded-full" />
@@ -115,7 +115,7 @@ export function QuotePost({ identifier, className }: QuotePostProps) {
   }
 
   return (
-    <Card className={cn("hover:shadow-md transition-shadow cursor-pointer", className)}>
+    <Card className={cn("border-l-4 border-l-green-500 border-muted bg-background hover:bg-muted/50 transition-colors cursor-pointer", className)}>
       <Link to={`/${identifier}`} className="block">
         <CardContent className="p-4">
           <div className="space-y-3">
@@ -138,8 +138,8 @@ export function QuotePost({ identifier, className }: QuotePostProps) {
 
             {/* Content preview */}
             <div className="text-sm">
-              <NoteContent 
-                event={event} 
+              <NoteContent
+                event={event}
                 className="text-muted-foreground [&_a]:text-muted-foreground [&_a]:hover:text-foreground"
               />
             </div>
