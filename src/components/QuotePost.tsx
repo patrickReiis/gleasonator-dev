@@ -5,13 +5,71 @@ import { Link } from 'react-router-dom';
 import { nip19 } from 'nostr-tools';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useNostr } from '@/hooks/useNostr';
+import { useAuthor } from '@/hooks/useAuthor';
+import { genUserName } from '@/lib/genUserName';
 import { NoteContent } from './NoteContent';
 import { cn } from '@/lib/utils';
 
 interface QuotePostProps {
   identifier: string; // NIP-19 identifier (note1, nevent1, naddr1)
   className?: string;
+}
+
+interface QuotePostAuthorProps {
+  pubkey: string;
+  createdAt: number;
+}
+
+/** Displays author information for quoted posts */
+function QuotePostAuthor({ pubkey, createdAt }: QuotePostAuthorProps) {
+  const author = useAuthor(pubkey);
+
+  if (author.isLoading) {
+    return (
+      <div className="flex items-center space-x-2">
+        <Skeleton className="h-6 w-6 rounded-full" />
+        <div className="space-y-1">
+          <Skeleton className="h-3 w-16" />
+          <Skeleton className="h-2 w-12" />
+        </div>
+      </div>
+    );
+  }
+
+  const metadata = author.data?.metadata;
+  const displayName = metadata?.name || metadata?.display_name || genUserName(pubkey);
+  const npub = nip19.npubEncode(pubkey);
+
+  return (
+    <div className="flex items-center space-x-2">
+      <Avatar className="h-6 w-6">
+        <AvatarFallback className="text-xs">
+          {(metadata?.name || metadata?.display_name || displayName).slice(0, 1).toUpperCase()}
+        </AvatarFallback>
+        {metadata?.picture && (
+          <img
+            src={metadata.picture}
+            alt={displayName}
+            className="h-full w-full object-cover"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+              e.currentTarget.parentElement!.querySelector('.AvatarFallback')!.classList.remove('hidden');
+            }}
+          />
+        )}
+      </Avatar>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium text-foreground truncate">
+          {displayName}
+        </p>
+        <p className="text-xs text-muted-foreground">
+          {new Date(createdAt * 1000).toLocaleDateString()}
+        </p>
+      </div>
+    </div>
+  );
 }
 
 /** Renders a quoted/embedded Nostr post from a NIP-19 identifier */
@@ -120,27 +178,13 @@ export function QuotePost({ identifier, className }: QuotePostProps) {
         <CardContent className="p-4">
           <div className="space-y-3">
             {/* Author info */}
-            <div className="flex items-center space-x-2">
-              <div className="w-6 h-6 bg-muted rounded-full flex items-center justify-center">
-                <span className="text-xs font-medium text-muted-foreground">
-                  {event.pubkey.slice(0, 2).toUpperCase()}
-                </span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-muted-foreground truncate">
-                  {event.pubkey.slice(0, 8)}...{event.pubkey.slice(-4)}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {new Date(event.created_at * 1000).toLocaleDateString()}
-                </p>
-              </div>
-            </div>
+            <QuotePostAuthor pubkey={event.pubkey} createdAt={event.created_at} />
 
             {/* Content preview */}
             <div className="text-sm">
               <NoteContent
                 event={event}
-                className="text-muted-foreground [&_a]:text-muted-foreground [&_a]:hover:text-foreground"
+                className="text-foreground [&_a]:text-blue-500 [&_a]:hover:text-blue-600"
               />
             </div>
 
