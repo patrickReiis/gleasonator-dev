@@ -13,13 +13,25 @@ export function useGlobalFeed() {
   return useInfiniteQuery({
     queryKey: ['global-feed', user?.pubkey, followedPubkeys],
     queryFn: async ({ pageParam, signal }) => {
-      const filter: any = { kinds: [1], limit: 20 };
-      if (pageParam) filter.until = pageParam;
+      let filter: any;
 
-      // If user is logged in and has followed users, filter by those pubkeys
-      if (user?.pubkey && followedPubkeys && followedPubkeys.length > 0) {
-        filter.authors = [user.pubkey, ...followedPubkeys]; // Include user's own posts + followed users
+      // If user is logged out, show posts matching domain:gleasonator.dev
+      if (!user) {
+        filter = {
+          kinds: [1, 6], // Both text notes and reposts
+          search: 'domain:gleasonator.dev',
+          limit: 20
+        };
+      } else {
+        // If user is logged in, show posts from followed users
+        filter = { kinds: [1], limit: 20 };
+
+        if (followedPubkeys && followedPubkeys.length > 0) {
+          filter.authors = [user.pubkey, ...followedPubkeys]; // Include user's own posts + followed users
+        }
       }
+
+      if (pageParam) filter.until = pageParam;
 
       const events = await nostr.query([filter], {
         signal: AbortSignal.any([signal, AbortSignal.timeout(3000)])

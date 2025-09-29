@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useSeoMeta } from '@unhead/react';
 import { useInView } from 'react-intersection-observer';
 import { useExploreFeed } from '@/hooks/useExploreFeed';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { Header } from '@/components/Header';
 import { Sidebar } from '@/components/Sidebar';
 import { PostCard } from '@/components/PostCard';
@@ -14,12 +15,13 @@ import { useNavigate } from 'react-router-dom';
 
 export function ExplorePage() {
   const navigate = useNavigate();
+  const { user } = useCurrentUser();
   const { ref, inView } = useInView();
-  
-  const { 
-    data, 
-    fetchNextPage, 
-    hasNextPage, 
+
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
     isFetchingNextPage,
     isLoading,
     isError,
@@ -43,7 +45,7 @@ export function ExplorePage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
+
       <main className="container mx-auto px-4 py-6 max-w-6xl">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Sidebar */}
@@ -52,21 +54,21 @@ export function ExplorePage() {
               <Sidebar />
             </div>
           </aside>
-          
+
           {/* Explore content */}
           <div className="lg:col-span-3 space-y-6">
             {/* Header */}
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <Button 
-                  onClick={() => navigate('/')} 
-                  variant="ghost" 
+                <Button
+                  onClick={() => navigate('/')}
+                  variant="ghost"
                   size="sm"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Back
                 </Button>
-                
+
                 <div className="flex items-center space-x-2">
                   <Globe className="w-5 h-5 text-primary" />
                   <h1 className="text-2xl font-bold text-foreground">Explore</h1>
@@ -75,7 +77,10 @@ export function ExplorePage() {
             </div>
 
             <div className="text-muted-foreground text-sm">
-              Discover posts from across the Nostr network
+              {user
+                ? "Discover posts from across the Nostr network"
+                : "Discover posts from gleasonator.dev"
+              }
             </div>
 
             {isLoading ? (
@@ -133,7 +138,10 @@ export function ExplorePage() {
                         No posts found
                       </h3>
                       <p className="text-muted-foreground mt-1">
-                        Try switching to a different relay to discover content
+                        {user
+                          ? "Try switching to a different relay to discover content"
+                          : "No posts from gleasonator.dev found. Try switching to a different relay."
+                        }
                       </p>
                     </div>
                     <RelaySelector className="w-full" />
@@ -184,7 +192,10 @@ export function ExplorePage() {
                 {!hasNextPage && posts.length > 0 && (
                   <div className="text-center py-8">
                     <div className="text-muted-foreground text-sm">
-                      You've explored all available posts! Try switching relays for more content.
+                      {user
+                        ? "You've explored all available posts! Try switching relays for more content."
+                        : "You've seen all available posts from gleasonator.dev! Try switching relays for more content."
+                      }
                     </div>
                     <RelaySelector className="w-full max-w-sm mx-auto mt-4" />
                   </div>

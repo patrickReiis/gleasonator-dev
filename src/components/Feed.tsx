@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { useGlobalFeed } from '@/hooks/useGlobalFeed';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { PostCard } from '@/components/PostCard';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -8,6 +9,7 @@ import { RelaySelector } from '@/components/RelaySelector';
 import { AlertCircle, Wifi } from 'lucide-react';
 
 export function Feed() {
+  const { user } = useCurrentUser();
   const {
     data,
     fetchNextPage,
@@ -93,10 +95,13 @@ export function Feed() {
             </div>
             <div>
               <h3 className="text-lg font-semibold text-foreground">
-                No posts from people you follow
+                No posts found
               </h3>
               <p className="text-muted-foreground mt-1">
-                Follow more people or try switching to a different relay to see more content
+                {!user
+                  ? "No posts from gleasonator.dev found. Try switching to a different relay."
+                  : "Follow more people or try switching to a different relay to see more content"
+                }
               </p>
             </div>
             <RelaySelector className="w-full" />
