@@ -3,26 +3,39 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import type { NostrEvent } from '@nostrify/nostrify';
 import { useCurrentUser } from './useCurrentUser';
 
-export function useExploreFeed() {
+export function useExploreFeed(searchQuery: string = '') {
   const { nostr } = useNostr();
   const { user } = useCurrentUser();
 
   return useInfiniteQuery({
-    queryKey: ['explore-feed', user?.pubkey],
+    queryKey: ['explore-feed', user?.pubkey, searchQuery],
     queryFn: async ({ pageParam, signal }) => {
       let filter: any;
+
+      // Build search query
+      let searchTerm = '';
+      if (!user) {
+        // If user is logged out, always include domain:gleasonator.dev
+        searchTerm = searchQuery
+          ? `domain:gleasonator.dev ${searchQuery}`
+          : 'domain:gleasonator.dev';
+      } else {
+        // If user is logged in, use the search query if provided
+        searchTerm = searchQuery;
+      }
 
       // If user is logged out, show posts matching domain:gleasonator.dev
       // If user is logged in, show posts from entire nostr network
       if (!user) {
         filter = {
           kinds: [1, 6], // Both text notes and reposts
-          search: 'domain:gleasonator.dev',
+          search: searchTerm,
           limit: 30
         };
       } else {
         filter = {
           kinds: [1], // Only kind 1 text notes for full network
+          ...(searchTerm && { search: searchTerm }),
           limit: 30 // Good batch size for discovery
         };
       }

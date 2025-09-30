@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useSeoMeta } from '@unhead/react';
 import { useInView } from 'react-intersection-observer';
 import { useExploreFeed } from '@/hooks/useExploreFeed';
@@ -8,15 +8,57 @@ import { Sidebar } from '@/components/Sidebar';
 import { PostCard } from '@/components/PostCard';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { RelaySelector } from '@/components/RelaySelector';
-import { ArrowLeft, Wifi, Globe } from 'lucide-react';
+import { ArrowLeft, Wifi, Globe, Search, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export function ExplorePage() {
   const navigate = useNavigate();
   const { user } = useCurrentUser();
   const { ref, inView } = useInView();
+
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+  const [debounceTimeout, setDebounceTimeout] = useState<NodeJS.Timeout | null>(null);
+
+  // Handle search input changes with debouncing
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchQuery(value);
+
+    // Clear existing timeout
+    if (debounceTimeout) {
+      clearTimeout(debounceTimeout);
+    }
+
+    // Set new timeout for 5 seconds
+    const timeout = setTimeout(() => {
+      setDebouncedSearchQuery(value);
+    }, 5000);
+
+    setDebounceTimeout(timeout);
+  }, [debounceTimeout]);
+
+  // Handle immediate search (when user clicks search button)
+  const handleImmediateSearch = useCallback(() => {
+    if (debounceTimeout) {
+      clearTimeout(debounceTimeout);
+      setDebounceTimeout(null);
+    }
+    setDebouncedSearchQuery(searchQuery);
+  }, [searchQuery, debounceTimeout]);
+
+  // Clear search
+  const handleClearSearch = useCallback(() => {
+    setSearchQuery('');
+    setDebouncedSearchQuery('');
+    if (debounceTimeout) {
+      clearTimeout(debounceTimeout);
+      setDebounceTimeout(null);
+    }
+  }, [debounceTimeout]);
 
   const {
     data,
@@ -26,7 +68,7 @@ export function ExplorePage() {
     isLoading,
     isError,
     error
-  } = useExploreFeed();
+  } = useExploreFeed(debouncedSearchQuery);
 
   const posts = data?.pages.flat() || [];
 
@@ -41,6 +83,15 @@ export function ExplorePage() {
       fetchNextPage();
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimeout) {
+        clearTimeout(debounceTimeout);
+      }
+    };
+  }, [debounceTimeout]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -76,12 +127,84 @@ export function ExplorePage() {
               </div>
             </div>
 
-            <div className="text-muted-foreground text-sm">
+            <div className="text-muted-foreground text-sm mb-6">
               {user
                 ? "Discover posts from across the Nostr network"
                 : "Discover posts from gleasonator.dev"
               }
             </div>
+
+            {/* Beautiful Search Bar */}
+            <Card className="gleam-card mb-6">
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  {/* Search Input with Actions */}
+                  <div className="relative flex items-center space-x-2">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Search posts, topics, or hashtags..."
+                        value={searchQuery}
+                        onChange={(e) => handleSearchChange(e.target.value)}
+                        className="pl-10 pr-20 h-12 text-base"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            handleImmediateSearch();
+                          }
+                        }}
+                      />
+                      <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
+                        {searchQuery && (
+                          <Button
+                            onClick={handleClearSearch}
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 hover:bg-destructive/10"
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        )}
+                        <Button
+                          onClick={handleImmediateSearch}
+                          disabled={isLoading}
+                          size="sm"
+                          className="h-8 px-3"
+                        >
+                          Search
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Search Status and Info */}
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center space-x-2 text-muted-foreground">
+                      {debouncedSearchQuery ? (
+                        <>
+                          <Search className="w-4 h-4" />
+                          <span>
+                            Searching for: <span className="font-medium text-foreground">"{debouncedSearchQuery}"</span>
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <Globe className="w-4 h-4" />
+                          <span>
+                            {user ? "Showing all posts" : "Showing posts from gleasonator.dev"}
+                          </span>
+                        </>
+                      )}
+                    </div>
+
+                    {searchQuery && searchQuery !== debouncedSearchQuery && (
+                      <div className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+                        Auto-search in 5s...
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
             {isLoading ? (
               <div className="space-y-6">
@@ -132,19 +255,35 @@ export function ExplorePage() {
               <Card className="gleam-card border-dashed">
                 <CardContent className="py-12 px-8 text-center">
                   <div className="max-w-sm mx-auto space-y-6">
-                    <Globe className="w-12 h-12 text-muted-foreground mx-auto" />
+                    {debouncedSearchQuery ? (
+                      <Search className="w-12 h-12 text-muted-foreground mx-auto" />
+                    ) : (
+                      <Globe className="w-12 h-12 text-muted-foreground mx-auto" />
+                    )}
                     <div>
                       <h3 className="text-lg font-semibold text-foreground">
-                        No posts found
+                        {debouncedSearchQuery ? "No results found" : "No posts found"}
                       </h3>
                       <p className="text-muted-foreground mt-1">
-                        {user
-                          ? "Try switching to a different relay to discover content"
-                          : "No posts from gleasonator.dev found. Try switching to a different relay."
+                        {debouncedSearchQuery
+                          ? `No posts found matching "${debouncedSearchQuery}". Try different keywords or clear the search.`
+                          : user
+                            ? "Try switching to a different relay to discover content"
+                            : "No posts from gleasonator.dev found. Try switching to a different relay."
                         }
                       </p>
                     </div>
-                    <RelaySelector className="w-full" />
+                    {debouncedSearchQuery ? (
+                      <Button
+                        onClick={handleClearSearch}
+                        variant="outline"
+                        className="w-full"
+                      >
+                        Clear Search
+                      </Button>
+                    ) : (
+                      <RelaySelector className="w-full" />
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -192,12 +331,24 @@ export function ExplorePage() {
                 {!hasNextPage && posts.length > 0 && (
                   <div className="text-center py-8">
                     <div className="text-muted-foreground text-sm">
-                      {user
-                        ? "You've explored all available posts! Try switching relays for more content."
-                        : "You've seen all available posts from gleasonator.dev! Try switching relays for more content."
+                      {debouncedSearchQuery
+                        ? `You've seen all results for "${debouncedSearchQuery}". Try a different search term or clear the search.`
+                        : user
+                          ? "You've explored all available posts! Try switching relays for more content."
+                          : "You've seen all available posts from gleasonator.dev! Try switching relays for more content."
                       }
                     </div>
-                    <RelaySelector className="w-full max-w-sm mx-auto mt-4" />
+                    {debouncedSearchQuery ? (
+                      <Button
+                        onClick={handleClearSearch}
+                        variant="outline"
+                        className="w-full max-w-sm mx-auto mt-4"
+                      >
+                        Clear Search
+                      </Button>
+                    ) : (
+                      <RelaySelector className="w-full max-w-sm mx-auto mt-4" />
+                    )}
                   </div>
                 )}
               </>
