@@ -40,8 +40,8 @@ export function ExplorePage() {
     }
 
     if (value.trim()) {
-      // Start countdown from 5
-      setCountdownSeconds(5);
+      // Start countdown from 2
+      setCountdownSeconds(2);
 
       // Set up countdown interval
       const interval = setInterval(() => {
@@ -57,7 +57,7 @@ export function ExplorePage() {
       }, 1000);
       setCountdownInterval(interval);
 
-      // Set new timeout for 5 seconds
+      // Set new timeout for 2 seconds
       const timeout = setTimeout(() => {
         setDebouncedSearchQuery(value);
         setCountdownSeconds(null);
@@ -65,7 +65,7 @@ export function ExplorePage() {
           clearInterval(countdownInterval);
           setCountdownInterval(null);
         }
-      }, 5000);
+      }, 2000);
 
       setDebounceTimeout(timeout);
     } else {
