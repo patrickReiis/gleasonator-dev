@@ -113,9 +113,19 @@ export function Feed() {
 
   return (
     <div className="space-y-6">
-      {posts.map((post) => (
-        <PostCard key={`${post.id}-${post.created_at}`} event={post} />
-      ))}
+      {posts.map((post) => {
+        // For reposts, use the original event ID in the key when available
+        let key = `${post.id}-${post.created_at}`;
+        if (post.kind === 6 && post.content && post.content.trim() !== '') {
+          try {
+            const originalEvent = JSON.parse(post.content);
+            key = `${originalEvent.id}-${post.created_at}`;
+          } catch (e) {
+            // Fallback to using repost ID
+          }
+        }
+        return <PostCard key={key} event={post} />;
+      })}
 
       {hasNextPage && (
         <div ref={ref} className="py-4">

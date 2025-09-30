@@ -24,7 +24,7 @@ export function useExploreFeed(searchQuery: string = '') {
 
       // Create filter based on whether we have a search term
       filter = {
-        kinds: [1], // Only kind 1 text notes
+        kinds: [1, 6], // Text notes and reposts
         ...(searchTerm && { search: searchTerm }),
         limit: 30 // Good batch size for discovery
       };

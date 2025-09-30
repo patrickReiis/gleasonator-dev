@@ -24,7 +24,7 @@ export function useGlobalFeed() {
         };
       } else {
         // If user is logged in, show posts from followed users
-        filter = { kinds: [1], limit: 20 };
+        filter = { kinds: [1, 6], limit: 20 };
 
         if (followedPubkeys && followedPubkeys.length > 0) {
           filter.authors = [user.pubkey, ...followedPubkeys]; // Include user's own posts + followed users

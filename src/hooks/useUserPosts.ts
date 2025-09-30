@@ -8,10 +8,10 @@ export function useUserPosts(pubkey: string) {
   return useInfiniteQuery({
     queryKey: ['user-posts', pubkey],
     queryFn: async ({ pageParam, signal }) => {
-      const filter: any = { 
-        kinds: [1], 
+      const filter: any = {
+        kinds: [1, 6],
         authors: [pubkey],
-        limit: 20 
+        limit: 20
       };
       if (pageParam) filter.until = pageParam;
 
@@ -40,16 +40,16 @@ export function useUserStats(pubkey: string) {
       // Get user's posts, followers, and following
       const [posts, followers, following] = await Promise.all([
         // User's posts
-        nostr.query([{ kinds: [1], authors: [pubkey], limit: 1000 }], { 
-          signal: AbortSignal.any([signal, AbortSignal.timeout(2000)]) 
+        nostr.query([{ kinds: [1], authors: [pubkey], limit: 1000 }], {
+          signal: AbortSignal.any([signal, AbortSignal.timeout(2000)])
         }),
         // People following this user (kind 3 events that include this user's pubkey)
-        nostr.query([{ kinds: [3], '#p': [pubkey], limit: 500 }], { 
-          signal: AbortSignal.any([signal, AbortSignal.timeout(2000)]) 
+        nostr.query([{ kinds: [3], '#p': [pubkey], limit: 500 }], {
+          signal: AbortSignal.any([signal, AbortSignal.timeout(2000)])
         }),
         // Who this user follows (their contact list)
-        nostr.query([{ kinds: [3], authors: [pubkey], limit: 1 }], { 
-          signal: AbortSignal.any([signal, AbortSignal.timeout(2000)]) 
+        nostr.query([{ kinds: [3], authors: [pubkey], limit: 1 }], {
+          signal: AbortSignal.any([signal, AbortSignal.timeout(2000)])
         })
       ]);
 

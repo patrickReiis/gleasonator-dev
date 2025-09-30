@@ -28,15 +28,36 @@ export function PostCard({ event, showReplies = false, clickable = true, highlig
   const [selectedProfileImage, setSelectedProfileImage] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const author = useAuthor(event.pubkey);
-  const interactions = usePostInteractions(event.id);
+  // Handle reposts (kind 6)
+  const isRepost = event.kind === 6;
+  let originalEvent: NostrEvent | null = null;
+
+  if (isRepost && event.content && event.content.trim() !== '') {
+    try {
+      originalEvent = JSON.parse(event.content);
+    } catch (e) {
+      console.error('Failed to parse repost content:', e);
+    }
+  }
+
+  // For reposts, use the original event for content and author
+  const displayEvent = isRepost && originalEvent ? originalEvent : event;
+  const displayAuthorPubkey = displayEvent.pubkey;
+
+  const author = useAuthor(displayAuthorPubkey);
+  const interactions = usePostInteractions(event.id); // Use repost event ID for interactions
   const { likePost, repostPost, replyToPost, isLoggedIn } = usePostActions();
 
   const metadata = author.data?.metadata;
-  const displayName = metadata?.display_name || metadata?.name || genUserName(event.pubkey);
-  const username = metadata?.name || genUserName(event.pubkey);
+  const displayName = metadata?.display_name || metadata?.name || genUserName(displayAuthorPubkey);
+  const username = metadata?.name || genUserName(displayAuthorPubkey);
   const profileImage = metadata?.picture;
   const timeAgo = formatDistanceToNow(new Date(event.created_at * 1000), { addSuffix: true });
+
+  // Get the reposter's info for reposts
+  const reposter = useAuthor(isRepost ? event.pubkey : '');
+  const reposterMetadata = reposter.data?.metadata;
+  const reposterDisplayName = reposterMetadata?.display_name || reposterMetadata?.name || (isRepost ? genUserName(event.pubkey) : '');
 
   const interactionData = interactions.data?.pages[0];
   const likes = interactionData?.likes || [];
@@ -45,20 +66,29 @@ export function PostCard({ event, showReplies = false, clickable = true, highlig
 
   const handleLike = () => {
     if (!isLoggedIn) return;
-    likePost.mutate(event.id);
+    // For reposts, we want to like the original event, not the repost itself
+    const targetEventId = isRepost && originalEvent ? originalEvent.id : event.id;
+    likePost.mutate(targetEventId);
   };
 
   const handleRepost = () => {
     if (!isLoggedIn) return;
-    repostPost.mutate({ id: event.id, pubkey: event.pubkey });
+    // For reposts, we want to repost the original event, not the repost itself
+    const targetEventId = isRepost && originalEvent ? originalEvent.id : event.id;
+    const targetEventPubkey = isRepost && originalEvent ? originalEvent.pubkey : event.pubkey;
+    repostPost.mutate({ id: targetEventId, pubkey: targetEventPubkey });
   };
 
   const handleReply = () => {
     if (!replyContent.trim() || !isLoggedIn) return;
 
+    // For reposts, we want to reply to the original event, not the repost itself
+    const targetEventId = isRepost && originalEvent ? originalEvent.id : event.id;
+    const targetEventPubkey = isRepost && originalEvent ? originalEvent.pubkey : event.pubkey;
+
     replyToPost.mutate({
-      eventId: event.id,
-      authorPubkey: event.pubkey,
+      eventId: targetEventId,
+      authorPubkey: targetEventPubkey,
       content: replyContent
     });
 
@@ -97,7 +127,9 @@ export function PostCard({ event, showReplies = false, clickable = true, highlig
     }
 
     if (clickable) {
-      navigate(`/post/${event.id}`);
+      // For reposts, navigate to the original event
+      const targetEventId = isRepost && originalEvent ? originalEvent.id : event.id;
+      navigate(`/post/${targetEventId}`);
     }
   };
 
@@ -115,7 +147,7 @@ export function PostCard({ event, showReplies = false, clickable = true, highlig
               if (profileImage) {
                 setSelectedProfileImage(profileImage);
               } else {
-                navigate(`/profile/${event.pubkey}`);
+                navigate(`/profile/${displayAuthorPubkey}`);
               }
             }}
             className="hover:scale-105 transition-transform"
@@ -133,7 +165,7 @@ export function PostCard({ event, showReplies = false, clickable = true, highlig
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  navigate(`/profile/${event.pubkey}`);
+                  navigate(`/profile/${displayAuthorPubkey}`);
                 }}
                 className="font-semibold text-foreground truncate hover:text-primary transition-colors"
               >
@@ -142,7 +174,7 @@ export function PostCard({ event, showReplies = false, clickable = true, highlig
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  navigate(`/profile/${event.pubkey}`);
+                  navigate(`/profile/${displayAuthorPubkey}`);
                 }}
                 className="text-muted-foreground text-sm hover:text-primary transition-colors"
               >
@@ -155,16 +187,35 @@ export function PostCard({ event, showReplies = false, clickable = true, highlig
                 {timeAgo}
               </span>
             </div>
+
+            {/* Repost indicator */}
+            {isRepost && (
+              <div className="flex items-center space-x-1 mt-1">
+                <Repeat2 className="w-3 h-3 text-green-600" />
+                <span className="text-xs text-muted-foreground">
+                  Reposted by{' '}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/profile/${event.pubkey}`);
+                    }}
+                    className="hover:text-primary transition-colors font-medium"
+                  >
+                    {reposterDisplayName}
+                  </button>
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </CardHeader>
 
       <CardContent className="pt-0 space-y-4">
         {/* Reply indicator */}
-        <ReplyIndicator event={event} />
+        <ReplyIndicator event={displayEvent} />
 
         <div className="text-foreground leading-relaxed">
-          <NoteContent event={event} />
+          <NoteContent event={displayEvent} />
         </div>
 
         {/* Action buttons */}
