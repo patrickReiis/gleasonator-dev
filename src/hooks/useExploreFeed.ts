@@ -2,43 +2,32 @@ import { useNostr } from '@nostrify/react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import type { NostrEvent } from '@nostrify/nostrify';
 import { useCurrentUser } from './useCurrentUser';
+import { useAppContext } from './useAppContext';
 
 export function useExploreFeed(searchQuery: string = '') {
   const { nostr } = useNostr();
   const { user } = useCurrentUser();
+  const { config } = useAppContext();
 
   return useInfiniteQuery({
-    queryKey: ['explore-feed', user?.pubkey, searchQuery],
+    queryKey: ['explore-feed', user?.pubkey, searchQuery, config.relayUrl],
     queryFn: async ({ pageParam, signal }) => {
       let filter: any;
 
       // Build search query
-      let searchTerm = '';
-      if (!user) {
-        // If user is logged out, always include domain:gleasonator.dev
-        searchTerm = searchQuery
-          ? `domain:gleasonator.dev ${searchQuery}`
-          : 'domain:gleasonator.dev';
-      } else {
-        // If user is logged in, use the search query if provided
-        searchTerm = searchQuery;
+      let searchTerm = searchQuery;
+
+      // If user is logged out and there's a search query, include domain:gleasonator.dev
+      if (!user && searchQuery) {
+        searchTerm = `domain:gleasonator.dev ${searchQuery}`;
       }
 
-      // If user is logged out, show posts matching domain:gleasonator.dev
-      // If user is logged in, show posts from entire nostr network
-      if (!user) {
-        filter = {
-          kinds: [1, 6], // Both text notes and reposts
-          search: searchTerm,
-          limit: 30
-        };
-      } else {
-        filter = {
-          kinds: [1], // Only kind 1 text notes for full network
-          ...(searchTerm && { search: searchTerm }),
-          limit: 30 // Good batch size for discovery
-        };
-      }
+      // Create filter based on whether we have a search term
+      filter = {
+        kinds: [1], // Only kind 1 text notes
+        ...(searchTerm && { search: searchTerm }),
+        limit: 30 // Good batch size for discovery
+      };
 
       if (pageParam) filter.until = pageParam;
 
