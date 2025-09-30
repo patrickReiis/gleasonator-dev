@@ -23,23 +23,56 @@ export function ExplorePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [debounceTimeout, setDebounceTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [countdownSeconds, setCountdownSeconds] = useState<number | null>(null);
+  const [countdownInterval, setCountdownInterval] = useState<NodeJS.Timeout | null>(null);
 
   // Handle search input changes with debouncing
   const handleSearchChange = useCallback((value: string) => {
     setSearchQuery(value);
 
-    // Clear existing timeout
+    // Clear existing timeout and countdown
     if (debounceTimeout) {
       clearTimeout(debounceTimeout);
     }
+    if (countdownInterval) {
+      clearInterval(countdownInterval);
+      setCountdownInterval(null);
+    }
 
-    // Set new timeout for 5 seconds
-    const timeout = setTimeout(() => {
-      setDebouncedSearchQuery(value);
-    }, 5000);
+    if (value.trim()) {
+      // Start countdown from 5
+      setCountdownSeconds(5);
 
-    setDebounceTimeout(timeout);
-  }, [debounceTimeout]);
+      // Set up countdown interval
+      const interval = setInterval(() => {
+        setCountdownSeconds(prev => {
+          if (prev === null) return null;
+          if (prev <= 1) {
+            clearInterval(interval);
+            setCountdownInterval(null);
+            return null;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      setCountdownInterval(interval);
+
+      // Set new timeout for 5 seconds
+      const timeout = setTimeout(() => {
+        setDebouncedSearchQuery(value);
+        setCountdownSeconds(null);
+        if (countdownInterval) {
+          clearInterval(countdownInterval);
+          setCountdownInterval(null);
+        }
+      }, 5000);
+
+      setDebounceTimeout(timeout);
+    } else {
+      // Clear countdown if input is empty
+      setCountdownSeconds(null);
+    }
+  }, [debounceTimeout, countdownInterval]);
 
   // Handle immediate search (when user clicks search button)
   const handleImmediateSearch = useCallback(() => {
@@ -47,18 +80,28 @@ export function ExplorePage() {
       clearTimeout(debounceTimeout);
       setDebounceTimeout(null);
     }
+    if (countdownInterval) {
+      clearInterval(countdownInterval);
+      setCountdownInterval(null);
+    }
+    setCountdownSeconds(null);
     setDebouncedSearchQuery(searchQuery);
-  }, [searchQuery, debounceTimeout]);
+  }, [searchQuery, debounceTimeout, countdownInterval]);
 
   // Clear search
   const handleClearSearch = useCallback(() => {
     setSearchQuery('');
     setDebouncedSearchQuery('');
+    setCountdownSeconds(null);
     if (debounceTimeout) {
       clearTimeout(debounceTimeout);
       setDebounceTimeout(null);
     }
-  }, [debounceTimeout]);
+    if (countdownInterval) {
+      clearInterval(countdownInterval);
+      setCountdownInterval(null);
+    }
+  }, [debounceTimeout, countdownInterval]);
 
   const {
     data,
@@ -84,14 +127,17 @@ export function ExplorePage() {
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  // Cleanup timeout on unmount
+  // Cleanup timeout and interval on unmount
   useEffect(() => {
     return () => {
       if (debounceTimeout) {
         clearTimeout(debounceTimeout);
       }
+      if (countdownInterval) {
+        clearInterval(countdownInterval);
+      }
     };
-  }, [debounceTimeout]);
+  }, [debounceTimeout, countdownInterval]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -196,9 +242,9 @@ export function ExplorePage() {
                       )}
                     </div>
 
-                    {searchQuery && searchQuery !== debouncedSearchQuery && (
+                    {searchQuery && searchQuery !== debouncedSearchQuery && countdownSeconds !== null && (
                       <div className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
-                        Auto-search in 5s...
+                        Auto-search in {countdownSeconds}s...
                       </div>
                     )}
                   </div>
