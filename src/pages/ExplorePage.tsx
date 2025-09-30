@@ -69,8 +69,9 @@ export function ExplorePage() {
 
       setDebounceTimeout(timeout);
     } else {
-      // Clear countdown if input is empty
+      // Clear countdown and immediately clear search if input is empty
       setCountdownSeconds(null);
+      setDebouncedSearchQuery('');
     }
   }, [debounceTimeout, countdownInterval]);
 
