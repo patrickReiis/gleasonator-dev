@@ -358,7 +358,7 @@ export function ProfilePage() {
                 {Array.from({ length: 3 }).map((_, i) => (
                   <div key={i} className="px-4 py-3 border-b border-border/40 last:border-b-0">
                     <div className="flex space-x-3">
-                      <Skeleton className="w-12 h-12 rounded-full flex-shrink-0" />
+                      <Skeleton className="w-12 h-12 rounded-full flex-shrink-0 self-start" />
                       <div className="flex-1 space-y-3">
                         <div className="flex items-center space-x-2">
                           <Skeleton className="h-4 w-24" />
@@ -406,7 +406,7 @@ export function ProfilePage() {
                     {isFetchingNextPage && (
                       <div className="px-4 py-3 border-t border-border/40">
                         <div className="flex space-x-3">
-                          <Skeleton className="w-12 h-12 rounded-full flex-shrink-0" />
+                          <Skeleton className="w-12 h-12 rounded-full flex-shrink-0 self-start" />
                           <div className="flex-1 space-y-3">
                             <div className="flex items-center space-x-2">
                               <Skeleton className="h-4 w-24" />

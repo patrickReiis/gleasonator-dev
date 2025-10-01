@@ -177,7 +177,7 @@ export function PostCard({ event, showReplies = false, clickable = true, highlig
                 navigate(`/profile/${displayAuthorPubkey}`);
               }
             }}
-            className="hover:scale-105 transition-transform flex-shrink-0"
+            className="hover:scale-105 transition-transform flex-shrink-0 self-start"
           >
             <Avatar className="gleam-avatar w-12 h-12">
               <AvatarImage src={profileImage} alt={displayName} />

@@ -113,7 +113,7 @@ export function ReplyThread({ eventId, showRoot = true, className }: ReplyThread
               <div ref={ref} className="px-4 py-3 border-t border-border/40">
                 {isFetchingNextPage ? (
                   <div className="flex space-x-3">
-                    <Skeleton className="w-12 h-12 rounded-full flex-shrink-0" />
+                    <Skeleton className="w-12 h-12 rounded-full flex-shrink-0 self-start" />
                     <div className="flex-1 space-y-2">
                       <Skeleton className="h-4 w-full" />
                       <Skeleton className="h-4 w-4/5" />
