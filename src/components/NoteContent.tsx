@@ -199,7 +199,14 @@ export function NoteContent({
               key={index}
               onClick={(e) => {
                 e.stopPropagation(); // Prevent PostCard navigation
+                e.preventDefault();
                 setSelectedImage(imageUrl);
+              }}
+              onPointerDown={(e) => {
+                e.stopPropagation(); // Prevent any pointer event bubbling
+              }}
+              onMouseDown={(e) => {
+                e.stopPropagation(); // Prevent any mouse event bubbling
               }}
               className={cn(
                 "relative overflow-hidden rounded-lg border border-border hover:opacity-90 transition-opacity bg-muted/20",
@@ -319,7 +326,14 @@ export function NoteContent({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
+                    e.preventDefault();
                     setExpandedVideo({ url: videoUrl, title: `Video ${index + 1}` });
+                  }}
+                  onPointerDown={(e) => {
+                    e.stopPropagation();
+                  }}
+                  onMouseDown={(e) => {
+                    e.stopPropagation();
                   }}
                   className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 text-white p-2 rounded-lg hover:bg-black/70"
                 >

@@ -118,12 +118,16 @@ export function PostCard({ event, showReplies = false, clickable = true, highlig
       return;
     }
 
-    // Don't navigate if there's an image modal open
-    // Check if we clicked on an image or if there's a modal open
-    const clickedImage = e.target instanceof HTMLElement && e.target.closest('.gleam-image-gallery button');
-    const modalIsOpen = !!document.querySelector('[role="dialog"]:not([hidden])');
+    // Check if we're clicking on an image in the image gallery
+    const isImageGalleryClick = e.target instanceof HTMLElement && e.target.closest('.gleam-image-gallery');
 
-    if (clickedImage || modalIsOpen) {
+    // Check if there's currently a modal open (image or video modal)
+    const hasOpenModal = !!document.querySelector('[role="dialog"]:not([hidden])');
+
+    // Don't navigate if:
+    // 1. Clicking on images in the gallery (they should open the modal)
+    // 2. There's already a modal open
+    if (isImageGalleryClick || hasOpenModal) {
       return;
     }
 

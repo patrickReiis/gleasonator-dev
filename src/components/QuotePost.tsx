@@ -172,17 +172,27 @@ export function QuotePost({ identifier, className }: QuotePostProps) {
   const handleCardClick = (e: React.MouseEvent) => {
     // Don't navigate if clicking on interactive elements
     const target = e.target as HTMLElement;
+
+    // Check if we're clicking on an image in the image gallery
+    const isImageGalleryClick = target.closest('.gleam-image-gallery');
+
+    // Check if there's currently a modal open (image or video modal)
+    const hasOpenModal = document.querySelector('[role="dialog"]:not([hidden])');
+
     const isInteractiveElement =
       target.closest('button') ||
       target.closest('a') ||
-      target.closest('img') ||
       target.closest('video') ||
       target.closest('audio') ||
       target.closest('[role="button"]') ||
       target.closest('.dialog-content') ||
       target.closest('[data-no-navigate]');
 
-    if (!isInteractiveElement) {
+    // Don't navigate if:
+    // 1. Clicking on interactive elements
+    // 2. Clicking on images in the gallery (they should open the modal)
+    // 3. There's already a modal open
+    if (!isInteractiveElement && !isImageGalleryClick && !hasOpenModal) {
       navigate(`/${identifier}`);
     }
   };
