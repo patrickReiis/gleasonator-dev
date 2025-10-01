@@ -5,6 +5,7 @@ import { extractVideoData } from '@/hooks/useShortVideos';
 import { useAuthor } from '@/hooks/useAuthor';
 import { usePostInteractions } from '@/hooks/useGlobalFeed';
 import { usePostActions } from '@/hooks/usePostActions';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { genUserName } from '@/lib/genUserName';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -41,6 +42,10 @@ export function VideoPlayer({ event, isActive, onVideoEnd }: VideoPlayerProps) {
   const likes = interactionData?.likes || [];
   const reposts = interactionData?.reposts || [];
   const replies = interactionData?.replies || [];
+
+  // Check if current user has liked this video
+  const { user } = useCurrentUser();
+  const hasUserLiked = user ? likes.some(like => like.pubkey === user.pubkey) : false;
 
   // Auto-play when video becomes in view (50% threshold)
   useEffect(() => {
@@ -223,9 +228,16 @@ export function VideoPlayer({ event, isActive, onVideoEnd }: VideoPlayerProps) {
               variant="ghost"
               onClick={handleLike}
               disabled={!isLoggedIn}
-              className="w-10 h-10 rounded-full bg-black/50 text-white hover:bg-red-500/70 transition-colors"
+              className={`w-10 h-10 rounded-full bg-black/50 transition-colors ${
+                hasUserLiked
+                  ? 'text-red-500 hover:bg-red-600/70'
+                  : 'text-white hover:bg-red-500/70'
+              }`}
             >
-              <Heart className="w-5 h-5" />
+              <Heart
+                className="w-5 h-5"
+                fill={hasUserLiked ? "currentColor" : "none"}
+              />
               <span className="sr-only">Like</span>
             </Button>
             <span className="text-xs">{likes.length}</span>

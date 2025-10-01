@@ -5,6 +5,7 @@ import { useAuthor } from '@/hooks/useAuthor';
 import { usePostInteractions } from '@/hooks/useGlobalFeed';
 import { usePostActions } from '@/hooks/usePostActions';
 import { usePost } from '@/hooks/usePost';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { genUserName } from '@/lib/genUserName';
 import { NoteContent } from '@/components/NoteContent';
 import { ReplyIndicator } from '@/components/ReplyIndicator';
@@ -64,6 +65,10 @@ export function PostCard({ event, showReplies = false, clickable = true, highlig
   const likes = interactionData?.likes || [];
   const reposts = interactionData?.reposts || [];
   const replies = interactionData?.replies || [];
+
+  // Check if current user has liked this post
+  const { user } = useCurrentUser();
+  const hasUserLiked = user ? likes.some(like => like.pubkey === user.pubkey) : false;
 
   const handleLike = () => {
     if (!isLoggedIn) return;
@@ -264,9 +269,16 @@ export function PostCard({ event, showReplies = false, clickable = true, highlig
                 size="sm"
                 onClick={handleLike}
                 disabled={!isLoggedIn}
-                className="text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 flex items-center space-x-1 px-3 py-1.5 rounded-full transition-colors"
+                className={`flex items-center space-x-1 px-3 py-1.5 rounded-full transition-colors ${
+                  hasUserLiked
+                    ? 'text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20'
+                    : 'text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20'
+                }`}
               >
-                <Heart className="w-4 h-4" />
+                <Heart
+                  className="w-4 h-4"
+                  fill={hasUserLiked ? "currentColor" : "none"}
+                />
                 {likes.length > 0 && <span className="text-xs">{likes.length}</span>}
               </Button>
 
