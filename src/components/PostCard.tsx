@@ -4,6 +4,7 @@ import type { NostrEvent } from '@nostrify/nostrify';
 import { useAuthor } from '@/hooks/useAuthor';
 import { usePostInteractions } from '@/hooks/useGlobalFeed';
 import { usePostActions } from '@/hooks/usePostActions';
+import { usePost } from '@/hooks/usePost';
 import { genUserName } from '@/lib/genUserName';
 import { NoteContent } from '@/components/NoteContent';
 import { ReplyIndicator } from '@/components/ReplyIndicator';
@@ -30,15 +31,15 @@ export function PostCard({ event, showReplies = false, clickable = true, highlig
 
   // Handle reposts (kind 6)
   const isRepost = event.kind === 6;
-  let originalEvent: NostrEvent | null = null;
 
-  if (isRepost && event.content && event.content.trim() !== '') {
-    try {
-      originalEvent = JSON.parse(event.content);
-    } catch (e) {
-      console.error('Failed to parse repost content:', e);
-    }
-  }
+  // For reposts, fetch the original event using the e tag
+  const originalEventId = isRepost ? event.tags.find(([name]) => name === 'e')?.[1] : '';
+  const originalEventQuery = usePost(originalEventId);
+
+  const originalEvent = isRepost && originalEventId ? originalEventQuery.data : null;
+
+  // Only show repost if we can find the original event
+  const shouldShowRepost = !isRepost || (isRepost && originalEvent !== null);
 
   // For reposts, use the original event for content and author
   const displayEvent = isRepost && originalEvent ? originalEvent : event;
@@ -132,6 +133,11 @@ export function PostCard({ event, showReplies = false, clickable = true, highlig
       navigate(`/post/${targetEventId}`);
     }
   };
+
+  // Don't render anything if this is a repost and we can't find the original event
+  if (!shouldShowRepost) {
+    return null;
+  }
 
   return (
     <>
