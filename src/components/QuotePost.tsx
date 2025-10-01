@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { type NostrEvent } from '@nostrify/nostrify';
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { nip19 } from 'nostr-tools';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -168,30 +168,51 @@ export function QuotePost({ identifier, className }: QuotePostProps) {
     return null;
   }
 
+  const navigate = useNavigate();
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Don't navigate if clicking on interactive elements
+    const target = e.target as HTMLElement;
+    const isInteractiveElement =
+      target.closest('button') ||
+      target.closest('a') ||
+      target.closest('img') ||
+      target.closest('video') ||
+      target.closest('audio') ||
+      target.closest('[role="button"]') ||
+      target.closest('.dialog-content') ||
+      target.closest('[data-no-navigate]');
+
+    if (!isInteractiveElement) {
+      navigate(`/${identifier}`);
+    }
+  };
+
   return (
-    <Card className={cn("border-l-4 border-l-green-500 border-muted bg-background hover:bg-muted/50 transition-colors cursor-pointer", className)}>
-      <Link to={`/${identifier}`} className="block">
-        <CardContent className="p-4">
-          <div className="space-y-3">
-            {/* Author info */}
-            <QuotePostAuthor pubkey={event.pubkey} createdAt={event.created_at} />
+    <Card
+      className={cn("border-l-4 border-l-green-500 border-muted bg-background hover:bg-muted/50 transition-colors cursor-pointer", className)}
+      onClick={handleCardClick}
+    >
+      <CardContent className="p-4">
+        <div className="space-y-3">
+          {/* Author info */}
+          <QuotePostAuthor pubkey={event.pubkey} createdAt={event.created_at} />
 
-            {/* Content preview */}
-            <div className="text-sm">
-              <NoteContent
-                event={event}
-                className="text-foreground [&_a]:text-blue-500 [&_a]:hover:text-blue-600"
-              />
-            </div>
-
-            {/* Interaction hint */}
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>Click to view full post</span>
-              <span>↗</span>
-            </div>
+          {/* Content preview */}
+          <div className="text-sm" data-no-navigate>
+            <NoteContent
+              event={event}
+              className="text-foreground [&_a]:text-blue-500 [&_a]:hover:text-blue-600"
+            />
           </div>
-        </CardContent>
-      </Link>
+
+          {/* Interaction hint */}
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span>Click to view full post</span>
+            <span>↗</span>
+          </div>
+        </div>
+      </CardContent>
     </Card>
   );
 }
