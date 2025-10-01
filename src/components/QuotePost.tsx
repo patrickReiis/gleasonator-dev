@@ -71,6 +71,7 @@ function QuotePostAuthor({ pubkey, createdAt }: QuotePostAuthorProps) {
 /** Renders a quoted/embedded Nostr post from a NIP-19 identifier */
 export function QuotePost({ identifier, className }: QuotePostProps) {
   const { nostr } = useNostr();
+  const navigate = useNavigate();
   const [showError, setShowError] = useState(false);
 
   const { data: event, isLoading, error } = useQuery({
@@ -167,8 +168,6 @@ export function QuotePost({ identifier, className }: QuotePostProps) {
   if (!event) {
     return null;
   }
-
-  const navigate = useNavigate();
 
   const handleCardClick = (e: React.MouseEvent) => {
     // Don't navigate if clicking on interactive elements
