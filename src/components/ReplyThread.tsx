@@ -61,35 +61,33 @@ export function ReplyThread({ eventId, showRoot = true, className }: ReplyThread
 
   return (
     <div className={`space-y-4 ${className}`}>
-      {/* Root event (if this is a reply and we want to show it) */}
-      {showRoot && rootEvent && (
-        <div>
+      {/* Thread - Contains both root and main event in unified timeline */}
+      <div className="border border-border/40 rounded-lg bg-background overflow-hidden">
+        {/* Root event (if this is a reply and we want to show it) */}
+        {showRoot && rootEvent && (
           <PostCard
             event={rootEvent}
             clickable={true}
             showReplies={false}
           />
+        )}
+
+        {/* Main event */}
+        <div className="relative">
+          {/* Reply indicator only if there's no root shown */}
+          {!(showRoot && rootEvent) && (
+            <div className="px-4 pt-3">
+              <ReplyIndicator event={event} showRoot={false} />
+            </div>
+          )}
+
+          <PostCard
+            event={event}
+            clickable={false}
+            showReplies={false}
+            highlighted={true}
+          />
         </div>
-      )}
-
-      {/* Thread connector line */}
-      {showRoot && rootEvent && (
-        <div className="flex justify-center">
-          <div className="w-0.5 h-8 bg-border/50" />
-        </div>
-      )}
-
-      {/* Main event */}
-      <div className="relative">
-        {/* Reply indicator */}
-        <ReplyIndicator event={event} showRoot={false} className="mb-3" />
-
-        <PostCard
-          event={event}
-          clickable={false}
-          showReplies={false}
-          highlighted={true}
-        />
       </div>
 
       {/* Replies */}
@@ -100,30 +98,26 @@ export function ReplyThread({ eventId, showRoot = true, className }: ReplyThread
             <span>Replies ({replies.length})</span>
           </div>
 
-          <div className="ml-12 space-y-4 border-l-2 border-border/30 pl-4">
+          <div className="border border-border/40 rounded-lg bg-background overflow-hidden">
             {replies.map((reply, index) => (
-              <div key={reply.id} className="relative">
-                {/* Thread connector for all but last reply */}
-                {index < replies.length - 1 && (
-                  <div className="absolute left-[-19px] top-8 w-0.5 h-full bg-border/30" />
-                )}
-
-                <PostCard
-                  event={reply}
-                  clickable={true}
-                  showReplies={false}
-                />
-              </div>
+              <PostCard
+                key={reply.id}
+                event={reply}
+                clickable={true}
+                showReplies={false}
+              />
             ))}
 
             {/* Load more indicator */}
             {hasNextPage && (
-              <div ref={ref} className="py-4">
+              <div ref={ref} className="px-4 py-3 border-t border-border/40">
                 {isFetchingNextPage ? (
-                  <div className="space-y-2">
-                    {[1, 2].map(i => (
-                      <Skeleton key={i} className="h-20 w-full" />
-                    ))}
+                  <div className="flex space-x-3">
+                    <Skeleton className="w-12 h-12 rounded-full flex-shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-4/5" />
+                    </div>
                   </div>
                 ) : (
                   <Button variant="ghost" size="sm" className="w-full">

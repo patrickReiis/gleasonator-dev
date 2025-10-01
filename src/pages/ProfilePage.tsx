@@ -347,35 +347,42 @@ export function ProfilePage() {
           </div>
 
           {/* Posts section */}
-          <Card className="gleam-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="w-5 h-5" />
-                Posts
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              {postsLoading ? (
-                <div className="space-y-4 p-6">
-                  {Array.from({ length: 3 }).map((_, i) => (
-                    <Card key={i} className="gleam-card">
-                      <CardContent className="p-6">
-                        <div className="flex space-x-4">
-                          <Skeleton className="w-12 h-12 rounded-full" />
-                          <div className="flex-1 space-y-3">
-                            <Skeleton className="h-4 w-32" />
-                            <div className="space-y-2">
-                              <Skeleton className="h-4 w-full" />
-                              <Skeleton className="h-4 w-4/5" />
-                            </div>
-                          </div>
+          <div className="space-y-4">
+            <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+              <MessageSquare className="w-5 h-5" />
+              Posts
+            </h2>
+
+            {postsLoading ? (
+              <div className="border border-border/40 rounded-lg bg-background overflow-hidden">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="px-4 py-3 border-b border-border/40 last:border-b-0">
+                    <div className="flex space-x-3">
+                      <Skeleton className="w-12 h-12 rounded-full flex-shrink-0" />
+                      <div className="flex-1 space-y-3">
+                        <div className="flex items-center space-x-2">
+                          <Skeleton className="h-4 w-24" />
+                          <Skeleton className="h-3 w-16" />
+                          <Skeleton className="h-3 w-12" />
                         </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              ) : posts.length === 0 ? (
-                <div className="p-12 text-center">
+                        <div className="space-y-2">
+                          <Skeleton className="h-4 w-full" />
+                          <Skeleton className="h-4 w-4/5" />
+                        </div>
+                        <div className="flex items-center space-x-6 pt-2">
+                          <Skeleton className="h-8 w-12" />
+                          <Skeleton className="h-8 w-12" />
+                          <Skeleton className="h-8 w-12" />
+                          <Skeleton className="h-8 w-8" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : posts.length === 0 ? (
+              <Card className="gleam-card border-dashed">
+                <CardContent className="p-12 text-center">
                   <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-lg font-semibold text-foreground mb-2">
                     {isOwnProfile ? "You haven't posted yet" : `${displayName} hasn't posted yet`}
@@ -383,37 +390,41 @@ export function ProfilePage() {
                   <p className="text-muted-foreground">
                     {isOwnProfile ? "Share your first thought!" : "Check back later for updates."}
                   </p>
-                </div>
-              ) : (
-                <div className="space-y-4 p-6">
-                  {posts.map((post) => (
-                    <PostCard key={`${post.id}-${post.created_at}`} event={post} />
-                  ))}
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="border border-border/40 rounded-lg bg-background overflow-hidden">
+                {posts.map((post, index) => (
+                  <PostCard
+                    key={`${post.id}-${post.created_at}`}
+                    event={post}
+                  />
+                ))}
 
-                  {hasNextPage && (
-                    <div ref={ref} className="py-4">
-                      {isFetchingNextPage && (
-                        <Card className="gleam-card">
-                          <CardContent className="p-6">
-                            <div className="flex space-x-4">
-                              <Skeleton className="w-12 h-12 rounded-full" />
-                              <div className="flex-1 space-y-3">
-                                <Skeleton className="h-4 w-32" />
-                                <div className="space-y-2">
-                                  <Skeleton className="h-4 w-full" />
-                                  <Skeleton className="h-4 w-4/5" />
-                                </div>
-                              </div>
+                {hasNextPage && (
+                  <div ref={ref}>
+                    {isFetchingNextPage && (
+                      <div className="px-4 py-3 border-t border-border/40">
+                        <div className="flex space-x-3">
+                          <Skeleton className="w-12 h-12 rounded-full flex-shrink-0" />
+                          <div className="flex-1 space-y-3">
+                            <div className="flex items-center space-x-2">
+                              <Skeleton className="h-4 w-24" />
+                              <Skeleton className="h-3 w-16" />
                             </div>
-                          </CardContent>
-                        </Card>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                            <div className="space-y-2">
+                              <Skeleton className="h-4 w-full" />
+                              <Skeleton className="h-4 w-4/5" />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </main>
 

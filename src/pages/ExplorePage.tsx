@@ -254,31 +254,31 @@ export function ExplorePage() {
             </Card>
 
             {isLoading ? (
-              <div className="space-y-6">
+              <div className="border border-border/40 rounded-lg bg-background overflow-hidden">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <Card key={i} className="gleam-card">
-                    <CardContent className="p-6">
-                      <div className="flex space-x-4">
-                        <Skeleton className="w-12 h-12 rounded-full" />
-                        <div className="flex-1 space-y-3">
-                          <div className="flex items-center space-x-2">
-                            <Skeleton className="h-4 w-24" />
-                            <Skeleton className="h-3 w-16" />
-                          </div>
-                          <div className="space-y-2">
-                            <Skeleton className="h-4 w-full" />
-                            <Skeleton className="h-4 w-4/5" />
-                            <Skeleton className="h-4 w-3/5" />
-                          </div>
-                          <div className="flex items-center space-x-6 pt-2">
-                            <Skeleton className="h-8 w-16" />
-                            <Skeleton className="h-8 w-16" />
-                            <Skeleton className="h-8 w-16" />
-                          </div>
+                  <div key={i} className="px-4 py-3 border-b border-border/40 last:border-b-0">
+                    <div className="flex space-x-3">
+                      <Skeleton className="w-12 h-12 rounded-full flex-shrink-0" />
+                      <div className="flex-1 space-y-3">
+                        <div className="flex items-center space-x-2">
+                          <Skeleton className="h-4 w-24" />
+                          <Skeleton className="h-3 w-16" />
+                          <Skeleton className="h-3 w-12" />
+                        </div>
+                        <div className="space-y-2">
+                          <Skeleton className="h-4 w-full" />
+                          <Skeleton className="h-4 w-4/5" />
+                          <Skeleton className="h-4 w-3/5" />
+                        </div>
+                        <div className="flex items-center space-x-6 pt-2">
+                          <Skeleton className="h-8 w-12" />
+                          <Skeleton className="h-8 w-12" />
+                          <Skeleton className="h-8 w-12" />
+                          <Skeleton className="h-8 w-8" />
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 ))}
               </div>
             ) : isError ? (
@@ -337,20 +337,21 @@ export function ExplorePage() {
             ) : (
               <>
                 {/* Posts feed */}
-                <div className="space-y-6">
+                <div className="border border-border/40 rounded-lg bg-background overflow-hidden">
                   {posts.map((post, index) => (
-                    <PostCard key={`${post.id}-${index}`} event={post} />
+                    <PostCard
+                      key={`${post.id}-${index}`}
+                      event={post}
+                    />
                   ))}
-                </div>
 
-                {/* Infinite scroll trigger */}
-                {hasNextPage && (
-                  <div ref={ref} className="py-6">
-                    {isFetchingNextPage ? (
-                      <Card className="gleam-card">
-                        <CardContent className="p-6">
-                          <div className="flex space-x-4">
-                            <Skeleton className="w-12 h-12 rounded-full" />
+                  {/* Infinite scroll trigger */}
+                  {hasNextPage && (
+                    <div ref={ref}>
+                      {isFetchingNextPage && (
+                        <div className="px-4 py-3 border-t border-border/40">
+                          <div className="flex space-x-3">
+                            <Skeleton className="w-12 h-12 rounded-full flex-shrink-0" />
                             <div className="flex-1 space-y-3">
                               <div className="flex items-center space-x-2">
                                 <Skeleton className="h-4 w-24" />
@@ -362,17 +363,11 @@ export function ExplorePage() {
                               </div>
                             </div>
                           </div>
-                        </CardContent>
-                      </Card>
-                    ) : (
-                      <div className="text-center">
-                        <div className="text-muted-foreground text-sm">
-                          Scroll down for more posts
                         </div>
-                      </div>
-                    )}
-                  </div>
-                )}
+                      )}
+                    </div>
+                  )}
+                </div>
 
                 {/* No more posts message */}
                 {!hasNextPage && posts.length > 0 && (

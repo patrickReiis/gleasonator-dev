@@ -32,31 +32,31 @@ export function Feed() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
+      <div className="border border-border/40 rounded-lg bg-background overflow-hidden">
         {Array.from({ length: 5 }).map((_, i) => (
-          <Card key={i} className="gleam-card">
-            <CardContent className="p-6">
-              <div className="flex space-x-4">
-                <Skeleton className="w-12 h-12 rounded-full" />
-                <div className="flex-1 space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <Skeleton className="h-4 w-24" />
-                    <Skeleton className="h-3 w-16" />
-                  </div>
-                  <div className="space-y-2">
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-4/5" />
-                    <Skeleton className="h-4 w-3/5" />
-                  </div>
-                  <div className="flex items-center space-x-6 pt-2">
-                    <Skeleton className="h-8 w-16" />
-                    <Skeleton className="h-8 w-16" />
-                    <Skeleton className="h-8 w-16" />
-                  </div>
+          <div key={i} className="px-4 py-3 border-b border-border/40 last:border-b-0">
+            <div className="flex space-x-3">
+              <Skeleton className="w-12 h-12 rounded-full flex-shrink-0" />
+              <div className="flex-1 space-y-3">
+                <div className="flex items-center space-x-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-3 w-16" />
+                  <Skeleton className="h-3 w-12" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-4/5" />
+                  <Skeleton className="h-4 w-3/5" />
+                </div>
+                <div className="flex items-center space-x-6 pt-2">
+                  <Skeleton className="h-8 w-12" />
+                  <Skeleton className="h-8 w-12" />
+                  <Skeleton className="h-8 w-12" />
+                  <Skeleton className="h-8 w-8" />
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         ))}
       </div>
     );
@@ -112,8 +112,8 @@ export function Feed() {
   }
 
   return (
-    <div className="space-y-6">
-      {posts.map((post) => {
+    <div className="border border-border/40 rounded-lg bg-background overflow-hidden">
+      {posts.map((post, index) => {
         // For reposts, use the original event ID in the key when available
         let key = `${post.id}-${post.created_at}`;
         if (post.kind === 6 && post.content && post.content.trim() !== '') {
@@ -124,29 +124,32 @@ export function Feed() {
             // Fallback to using repost ID
           }
         }
-        return <PostCard key={key} event={post} />;
+        return (
+          <PostCard
+            key={key}
+            event={post}
+          />
+        );
       })}
 
       {hasNextPage && (
-        <div ref={ref} className="py-4">
+        <div ref={ref}>
           {isFetchingNextPage && (
-            <Card className="gleam-card">
-              <CardContent className="p-6">
-                <div className="flex space-x-4">
-                  <Skeleton className="w-12 h-12 rounded-full" />
-                  <div className="flex-1 space-y-3">
-                    <div className="flex items-center space-x-2">
-                      <Skeleton className="h-4 w-24" />
-                      <Skeleton className="h-3 w-16" />
-                    </div>
-                    <div className="space-y-2">
-                      <Skeleton className="h-4 w-full" />
-                      <Skeleton className="h-4 w-4/5" />
-                    </div>
+            <div className="px-4 py-3 border-t border-border/40">
+              <div className="flex space-x-3">
+                <Skeleton className="w-12 h-12 rounded-full flex-shrink-0" />
+                <div className="flex-1 space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-3 w-16" />
+                  </div>
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-4/5" />
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           )}
         </div>
       )}
